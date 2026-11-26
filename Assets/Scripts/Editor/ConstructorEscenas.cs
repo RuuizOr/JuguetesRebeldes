@@ -604,40 +604,27 @@ public static partial class ConstructorJuego
         nm.botonVolverOpciones = volver;
 
         // ---- Completado ----
-        RectTransform cc = CrearPanelModal("PanelCompletado", t, new Vector2(900f, 740f), "¡Nivel completado!", new Color(1f, 0.85f, 0.3f), out GameObject completado);
+        string subNivel = "Nivel " + nm.numeroNivel + "  •  " + nm.nombreNivel;
+        nm.resultadoCompletado = CrearPanelResultado(t, "PanelCompletado", TipoResultado.Completado, "¡NIVEL COMPLETADO!", subNivel,
+            out GameObject completado, out nm.botonSiguiente, out nm.botonMenuCompletado,
+            "Siguiente nivel", "play", ColorBoton, "Menú", "casa", ColorBotonAzul);
         nm.panelCompletado = completado;
-        nm.estrellas = new Image[3];
-        for (int i = 0; i < 3; i++)
-        {
-            Image e = Imagen("Estrella" + (i + 1), cc, SpriteUI("estrella_vacia"), Color.white);
-            Colocar(e.rectTransform, arriba, new Vector2((i - 1) * 150f, -195f), new Vector2(i == 1 ? 140f : 115f, i == 1 ? 140f : 115f));
-            e.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            nm.estrellas[i] = e;
-        }
+        nm.estrellas = new Image[0];
         nm.spriteEstrella = SpriteUI("estrella");
         nm.spriteEstrellaVacia = SpriteUI("estrella_vacia");
-        nm.textoResumen = Texto("TextoResumen", cc, "", 32, Color.white, TextAnchor.UpperCenter, arriba, new Vector2(0f, -275f), new Vector2(840f, 300f), false);
-        nm.botonSiguiente = Boton("BotonSiguiente", cc, "Siguiente nivel", new Vector2(0.5f, 0f), new Vector2(-190f, 40f), new Vector2(340f, 85f), ColorBoton);
-        nm.botonMenuCompletado = Boton("BotonMenu", cc, "Menú", new Vector2(0.5f, 0f), new Vector2(190f, 40f), new Vector2(340f, 85f), ColorBotonAzul);
 
         // ---- Game Over ----
-        RectTransform cg = CrearPanelModal("PanelGameOver", t, new Vector2(780f, 560f), "¡Oh no!", new Color(1f, 0.4f, 0.35f), out GameObject gameOver);
+        nm.resultadoGameOver = CrearPanelResultado(t, "PanelGameOver", TipoResultado.Derrota, "¡OH NO!", subNivel,
+            out GameObject gameOver, out nm.botonReintentar, out nm.botonMenuGameOver,
+            "Reintentar", "reintentar", ColorBoton, "Menú", "casa", ColorBotonRojo);
         nm.panelGameOver = gameOver;
-        nm.textoMotivo = Texto("TextoMotivo", cg, "", 38, Color.white, TextAnchor.MiddleCenter, arriba, new Vector2(0f, -150f), new Vector2(700f, 220f), false);
-        nm.botonReintentar = Boton("BotonReintentar", cg, "Reintentar", new Vector2(0.5f, 0f), new Vector2(-180f, 40f), new Vector2(320f, 85f), ColorBoton);
-        nm.botonMenuGameOver = Boton("BotonMenu", cg, "Menú", new Vector2(0.5f, 0f), new Vector2(180f, 40f), new Vector2(320f, 85f), ColorBotonRojo);
 
         // ---- Victoria final ----
-        RectTransform cv = CrearPanelModal("PanelVictoriaFinal", t, new Vector2(980f, 800f), "¡Salvaste la Navidad!", new Color(1f, 0.85f, 0.3f), out GameObject victoria);
+        nm.resultadoVictoria = CrearPanelResultado(t, "PanelVictoriaFinal", TipoResultado.Victoria, "¡SALVASTE LA NAVIDAD!",
+            "Todos los juguetes volvieron al taller a tiempo",
+            out GameObject victoria, out nm.botonVerFinal, out nm.botonMenuFinal,
+            "Ver el final", "regalo", ColorBoton, "Menú principal", "casa", ColorBotonAzul);
         nm.panelVictoriaFinal = victoria;
-        Image regalo = Imagen("Regalo", cv, SpriteUI("regalo"), Color.white);
-        Colocar(regalo.rectTransform, arriba, new Vector2(0f, -140f), new Vector2(120f, 120f));
-        regalo.gameObject.AddComponent<Girar>().tiempoSinEscala = true;
-        regalo.GetComponent<Girar>().velocidad = 0f;
-        regalo.GetComponent<Girar>().amplitud = 8f;
-        nm.textoResumenFinal = Texto("TextoResumen", cv, "", 30, Color.white, TextAnchor.UpperCenter, arriba, new Vector2(0f, -270f), new Vector2(900f, 380f), false);
-        nm.botonVerFinal = Boton("BotonVerFinal", cv, "Ver el final", new Vector2(0.5f, 0f), new Vector2(-200f, 40f), new Vector2(360f, 85f), ColorBoton);
-        nm.botonMenuFinal = Boton("BotonMenu", cv, "Menú principal", new Vector2(0.5f, 0f), new Vector2(200f, 40f), new Vector2(360f, 85f), ColorBotonAzul);
     }
 
     // =====================================================================

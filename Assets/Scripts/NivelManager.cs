@@ -48,6 +48,9 @@ public class NivelManager : MonoBehaviour
     public Text textoResumen;
     public Text textoMotivo;
     public Text textoResumenFinal;
+    public PanelResultado resultadoCompletado;
+    public PanelResultado resultadoGameOver;
+    public PanelResultado resultadoVictoria;
 
     [Header("Botones")]
     public Button botonContinuar;
@@ -378,9 +381,12 @@ public class NivelManager : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(espera);
         if (panel == null) yield break;
+        OcultarAvisosHUD();
         panel.SetActive(true);
         UIFoco.Seleccionar(panel);
-        Transform caja = panel.transform.childCount > 0 ? panel.transform.GetChild(0) : panel.transform;
+        PanelResultado res = panel.GetComponent<PanelResultado>();
+        Transform caja = res != null && res.caja != null ? res.caja : null;
+        if (caja == null) caja = panel.transform.childCount > 0 ? panel.transform.GetChild(0) : panel.transform;
         for (float x = 0f; x < 1f; x += Time.unscaledDeltaTime / 0.3f)
         {
             float s = Mathf.LerpUnclamped(0.6f, 1f, 1f - Mathf.Pow(1f - x, 3f) + Mathf.Sin(x * Mathf.PI) * 0.1f);
@@ -388,6 +394,16 @@ public class NivelManager : MonoBehaviour
             yield return null;
         }
         caja.localScale = Vector3.one;
+    }
+
+    // Quita del HUD los textos flotantes para que no se amontonen con el panel final.
+    void OcultarAvisosHUD()
+    {
+        if (textoCombo != null) textoCombo.gameObject.SetActive(false);
+        if (textoAviso != null) textoAviso.gameObject.SetActive(false);
+        if (textoCentro != null) textoCentro.gameObject.SetActive(false);
+        Indicadores ind = FindAnyObjectByType<Indicadores>();
+        if (ind != null) ind.gameObject.SetActive(false);
     }
 
     // ---------------- Fin del nivel ----------------
@@ -413,6 +429,7 @@ public class NivelManager : MonoBehaviour
         ActualizarContadores();
 
         float usado = Mathf.Min(tiempoJuego, tiempoLimite);
+        int mejorPrevio = GameData.RecordPuntos(numeroNivel);
         bool recordPuntos = GameData.GuardarPuntos(numeroNivel, puntos);
         bool recordTiempo = GameData.GuardarTiempo(numeroNivel, usado);
 
@@ -422,6 +439,15 @@ public class NivelManager : MonoBehaviour
                          "\n<size=46><color=#FFD24A>" + puntos.ToString("N0") + " pts</color></size>";
         if (recordPuntos || recordTiempo)
             resumen += "\n<color=#7CFF8A>¡Nuevo récord" + (recordPuntos && recordTiempo ? " de puntos y tiempo" : recordPuntos ? " de puntos" : " de tiempo") + "!</color>";
+
+        string[] stats = { atrapados + "/" + total, escapados.ToString(), GameData.FormatoTiempo(usado) };
+        int[] bonos = { bonusTiempo, bonusVidas, bonusPerfecto };
+        string textoRecord = null;
+        if (recordPuntos || recordTiempo)
+            textoRecord = "¡NUEVO RÉCORD!\n<size=22>" + (recordPuntos && recordTiempo ? "puntos y tiempo" : recordPuntos ? "de puntos" : "de tiempo") + "</size>";
+        PanelResultado pr = numeroNivel >= GameData.TotalNiveles ? resultadoVictoria : resultadoCompletado;
+        if (pr != null)
+            pr.ConfigurarResultado(numEstrellas, stats, bonos, puntos, mejorPrevio, textoRecord);
 
         if (numeroNivel >= GameData.TotalNiveles)
         {
@@ -437,7 +463,7 @@ public class NivelManager : MonoBehaviour
                 if (estrellas[i] != null) estrellas[i].sprite = spriteEstrellaVacia;
             AudioManager.SFX("nivel_completo");
             StartCoroutine(MostrarPanel(panelCompletado, 1.6f));
-            StartCoroutine(AnimarEstrellas(numEstrellas, 2.1f));
+            if (resultadoCompletado == null) StartCoroutine(AnimarEstrellas(numEstrellas, 2.1f));
         }
     }
 
@@ -459,6 +485,11 @@ public class NivelManager : MonoBehaviour
         terminado = true;
         enJuego = false;
         if (textoMotivo != null) textoMotivo.text = motivo;
+        if (resultadoGameOver != null)
+        {
+            string[] stats = { atrapados + "/" + total, escapados.ToString(), GameData.FormatoTiempo(Mathf.Min(tiempoJuego, tiempoLimite)) };
+            resultadoGameOver.ConfigurarDerrota(motivo, stats, puntos, GameData.RecordPuntos(numeroNivel));
+        }
         AudioManager.SFX("derrota");
         StartCoroutine(MostrarPanel(panelGameOver, 1.2f));
     }
