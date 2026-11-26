@@ -16,4 +16,5 @@ public static class AbrirEscenas
     [MenuItem("Juguetes Rebeldes/Abrir escena/Nivel 1", priority = 43)] static void A4() => Abrir("Nivel1");
     [MenuItem("Juguetes Rebeldes/Abrir escena/Nivel 2", priority = 44)] static void A5() => Abrir("Nivel2");
     [MenuItem("Juguetes Rebeldes/Abrir escena/Nivel 3", priority = 45)] static void A6() => Abrir("Nivel3");
+    [MenuItem("Juguetes Rebeldes/Abrir escena/Final", priority = 46)] static void A7() => Abrir("Final");
 }

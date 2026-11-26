@@ -12,6 +12,8 @@ public class PuertaSalida : MonoBehaviour
     private static readonly List<PuertaSalida> todas = new List<PuertaSalida>();
     private Color colorNormal = new Color(1f, 0.8f, 0.45f);
 
+    public static IReadOnlyList<PuertaSalida> Todas => todas;
+
     public Vector3 PuntoEscape => puntoEscape != null ? puntoEscape.position : transform.position;
 
     void OnEnable() => todas.Add(this);

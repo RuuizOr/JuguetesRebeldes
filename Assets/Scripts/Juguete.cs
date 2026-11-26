@@ -8,6 +8,7 @@ public enum EstadoJuguete
     Huir,
     Cansado,
     Escapar,
+    Congelado,
     Atrapado,
     Escapado
 }
@@ -22,6 +23,7 @@ public class Juguete : MonoBehaviour
     public float velocidadDeambular = 2.2f;
     public float velocidadHuir = 6.2f;
     public float velocidadEscapar = 4.2f;
+    public float velocidadAtraido = 3.8f;
 
     [Header("Detección")]
     public float rangoMiedo = 6f;
@@ -38,6 +40,7 @@ public class Juguete : MonoBehaviour
     [Header("Referencias")]
     public Animator animator;
     public TextMesh etiqueta;
+    public GameObject cuboHielo;
     public GameObject efectoAtrapar;
     public GameObject efectoEscape;
 
@@ -46,20 +49,30 @@ public class Juguete : MonoBehaviour
 
     private NavMeshAgent agente;
     private Transform jugador;
+    private DuendeController duende;
     private PuertaSalida puerta;
     private float tiempoEnEstado;
     private float huyendoAcumulado;
     private float momentoIntento;
     private float siguienteRecalculo;
+    private float finCongelado;
     private bool avisado;
+    private bool atraido;
 
     public EstadoJuguete Estado => estadoActual;
+    public bool EstaCongelado => estadoActual == EstadoJuguete.Congelado;
+    public bool Activo => estadoActual != EstadoJuguete.Atrapado && estadoActual != EstadoJuguete.Escapado;
 
     void Start()
     {
         agente = GetComponent<NavMeshAgent>();
         GameObject p = GameObject.FindWithTag("Player");
-        if (p != null) jugador = p.transform;
+        if (p != null)
+        {
+            jugador = p.transform;
+            duende = p.GetComponent<DuendeController>();
+        }
+        if (cuboHielo != null) cuboHielo.SetActive(false);
 
         momentoIntento = Random.Range(tiempoPrimerIntento.x, tiempoPrimerIntento.y);
 
@@ -71,11 +84,14 @@ public class Juguete : MonoBehaviour
 
     void Update()
     {
-        if (estadoActual == EstadoJuguete.Atrapado || estadoActual == EstadoJuguete.Escapado)
+        if (!Activo)
             return;
 
         if (animator != null)
+        {
+            animator.speed = EstaCongelado ? 0f : 1f;
             animator.SetFloat("Velocidad", agente.velocity.magnitude);
+        }
 
         bool enJuego = NivelManager.Instancia == null || NivelManager.Instancia.EnJuego;
         if (!enJuego || !agente.isOnNavMesh || jugador == null)
@@ -84,9 +100,46 @@ public class Juguete : MonoBehaviour
             return;
         }
 
+        // Congelado por una bola de nieve
+        if (EstaCongelado)
+        {
+            agente.isStopped = true;
+            if (Time.time >= finCongelado)
+            {
+                if (cuboHielo != null) cuboHielo.SetActive(false);
+                huyendoAcumulado = 0f;
+                CambiarEstado(DistanciaJugador() <= rangoMiedo ? EstadoJuguete.Huir : EstadoJuguete.Deambular);
+            }
+            return;
+        }
+
+        float distancia = DistanciaJugador();
+
+        // Imán de regalos: los juguetes cercanos son atraídos hacia el jugador
+        if (duende != null && duende.ImanActivo && distancia <= duende.radioIman)
+        {
+            if (!atraido)
+            {
+                atraido = true;
+                Etiqueta("?", new Color(0.9f, 0.6f, 1f));
+            }
+            agente.isStopped = false;
+            agente.speed = velocidadAtraido;
+            if (Time.time >= siguienteRecalculo)
+            {
+                agente.SetDestination(jugador.position);
+                siguienteRecalculo = Time.time + 0.2f;
+            }
+            return;
+        }
+        if (atraido)
+        {
+            atraido = false;
+            CambiarEstado(estadoActual);
+        }
+
         agente.isStopped = estadoActual == EstadoJuguete.Cansado;
         tiempoEnEstado += Time.deltaTime;
-        float distancia = DistanciaJugador();
 
         switch (estadoActual)
         {
@@ -181,7 +234,25 @@ public class Juguete : MonoBehaviour
                         NivelManager.Instancia.AvisoEscape(this);
                 }
                 break;
+
+            case EstadoJuguete.Congelado:
+                agente.isStopped = true;
+                agente.ResetPath();
+                Etiqueta("Brrr", new Color(0.55f, 0.9f, 1f));
+                break;
         }
+    }
+
+    public bool Congelar(float segundos)
+    {
+        if (!Activo || agente == null)
+            return false;
+
+        finCongelado = Time.time + segundos;
+        atraido = false;
+        if (cuboHielo != null) cuboHielo.SetActive(true);
+        CambiarEstado(EstadoJuguete.Congelado);
+        return true;
     }
 
     void Etiqueta(string texto, Color color)
@@ -257,9 +328,7 @@ public class Juguete : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player"))
-            return;
-        if (estadoActual == EstadoJuguete.Atrapado || estadoActual == EstadoJuguete.Escapado)
+        if (!other.CompareTag("Player") || !Activo)
             return;
         if (NivelManager.Instancia != null && !NivelManager.Instancia.EnJuego)
             return;
@@ -268,39 +337,71 @@ public class Juguete : MonoBehaviour
         if (d != null && d.Muerto)
             return;
 
-        Atrapar();
+        Atrapar(d);
     }
 
-    void Atrapar()
+    void Atrapar(DuendeController d)
     {
+        bool estabaCongelado = EstaCongelado;
         estadoActual = EstadoJuguete.Atrapado;
-        Finalizar(efectoAtrapar);
+        Detener();
+        if (cuboHielo != null) cuboHielo.SetActive(false);
+        if (efectoAtrapar != null)
+            Instantiate(efectoAtrapar, transform.position + Vector3.up * 0.8f, Quaternion.identity);
         AudioManager.SFX("atrapar");
         if (NivelManager.Instancia != null)
-            NivelManager.Instancia.JugueteAtrapado(this);
+            NivelManager.Instancia.JugueteAtrapado(this, estabaCongelado);
+        StartCoroutine(VolarAlCostal(d));
     }
 
     void Escaparse()
     {
         estadoActual = EstadoJuguete.Escapado;
-        Finalizar(efectoEscape);
+        Detener();
+        if (efectoEscape != null)
+            Instantiate(efectoEscape, transform.position + Vector3.up * 0.8f, Quaternion.identity);
         AudioManager.SFX("escape");
         if (NivelManager.Instancia != null)
             NivelManager.Instancia.JugueteEscapado(this);
+        StartCoroutine(Encoger());
     }
 
-    void Finalizar(GameObject efecto)
+    void Detener()
     {
         Etiqueta("", Color.white);
         if (agente.isOnNavMesh) { agente.isStopped = true; agente.ResetPath(); }
         agente.enabled = false;
         foreach (Collider c in GetComponentsInChildren<Collider>())
             c.enabled = false;
+        Saltarin s = GetComponent<Saltarin>();
+        if (s != null) s.enabled = false;
+        Transform sombra = transform.Find("Sombra");
+        if (sombra != null) sombra.gameObject.SetActive(false);
+    }
 
-        if (efecto != null)
-            Instantiate(efecto, transform.position + Vector3.up * 0.8f, Quaternion.identity);
+    // El juguete salta en arco y entra al costal del jugador
+    IEnumerator VolarAlCostal(DuendeController d)
+    {
+        Vector3 inicio = transform.position;
+        Vector3 escala = transform.localScale;
+        Quaternion rot = transform.rotation;
+        const float duracion = 0.55f;
 
-        StartCoroutine(Encoger());
+        for (float t = 0f; t < 1f; t += Time.deltaTime / duracion)
+        {
+            Vector3 destino = d != null ? d.PosicionCostal : inicio + Vector3.up * 2f;
+            Vector3 p = Vector3.Lerp(inicio, destino, t);
+            p.y += Mathf.Sin(t * Mathf.PI) * 2.2f;
+            transform.position = p;
+            transform.rotation = rot * Quaternion.Euler(0f, t * 720f, t * 180f);
+            float s = t < 0.25f ? 1f + t * 0.8f : Mathf.Lerp(1.2f, 0.05f, (t - 0.25f) / 0.75f);
+            transform.localScale = escala * s;
+            yield return null;
+        }
+
+        if (d != null) d.SacudirCostal();
+        AudioManager.SFX("pop", 0.7f);
+        Destroy(gameObject);
     }
 
     IEnumerator Encoger()

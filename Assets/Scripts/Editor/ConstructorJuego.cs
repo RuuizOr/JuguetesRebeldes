@@ -49,6 +49,8 @@ public static partial class ConstructorJuego
             ConstruirMenu();
             EditorUtility.DisplayProgressBar("Juguetes Rebeldes", "Escena: Selección de personaje", 0.5f);
             ConstruirSeleccion();
+            EditorUtility.DisplayProgressBar("Juguetes Rebeldes", "Escena: Final", 0.52f);
+            ConstruirFinal();
             for (int n = 1; n <= 3; n++)
             {
                 EditorUtility.DisplayProgressBar("Juguetes Rebeldes", "Escena: Nivel " + n, 0.55f + n * 0.13f);
@@ -65,6 +67,7 @@ public static partial class ConstructorJuego
                 new EditorBuildSettingsScene(RutaEscenas + "/Nivel1.unity", true),
                 new EditorBuildSettingsScene(RutaEscenas + "/Nivel2.unity", true),
                 new EditorBuildSettingsScene(RutaEscenas + "/Nivel3.unity", true),
+                new EditorBuildSettingsScene(RutaEscenas + "/Final.unity", true),
             };
 
             AssetDatabase.SaveAssets();
@@ -167,6 +170,7 @@ public static partial class ConstructorJuego
         fuente = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         factorUnidad = -1f;
         CrearMateriales();
+        CrearMaterialesExtra();
     }
 
     // =====================================================================
@@ -697,13 +701,13 @@ public static partial class ConstructorJuego
         ColorBlock cb = b.colors;
         cb.normalColor = color;
         cb.highlightedColor = Color.Lerp(color, Color.white, 0.25f);
-        cb.selectedColor = color;
+        cb.selectedColor = Color.Lerp(color, Color.white, 0.3f);
         cb.pressedColor = Color.Lerp(color, Color.black, 0.3f);
         cb.disabledColor = new Color(0.35f, 0.35f, 0.4f, 0.8f);
         cb.fadeDuration = 0.08f;
         b.colors = cb;
         Navigation nav = b.navigation;
-        nav.mode = Navigation.Mode.None;
+        nav.mode = Navigation.Mode.Automatic;
         b.navigation = nav;
 
         Text t = Texto("Texto", img.transform, etiqueta, tamTexto, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), Vector2.zero, tam);
@@ -734,7 +738,7 @@ public static partial class ConstructorJuego
         Transform handle = g.transform.Find("Handle Slide Area/Handle");
         if (handle != null) handle.GetComponent<RectTransform>().sizeDelta = new Vector2(40f, 0f);
         Navigation nav = s.navigation;
-        nav.mode = Navigation.Mode.None;
+        nav.mode = Navigation.Mode.Automatic;
         s.navigation = nav;
         return s;
     }
@@ -766,7 +770,7 @@ public static partial class ConstructorJuego
         lrt.offsetMax = Vector2.zero;
         Toggle t = g.GetComponent<Toggle>();
         Navigation nav = t.navigation;
-        nav.mode = Navigation.Mode.None;
+        nav.mode = Navigation.Mode.Automatic;
         t.navigation = nav;
         return t;
     }

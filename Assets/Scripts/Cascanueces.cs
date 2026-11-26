@@ -17,6 +17,7 @@ public class Cascanueces : MonoBehaviour
     public Transform jugador;
     public Transform[] puntosPatrulla;
     public Light luzOjos;
+    public GameObject cuboHielo;
 
     [Header("Detección")]
     public float rangoDeteccion = 9f;
@@ -40,12 +41,29 @@ public class Cascanueces : MonoBehaviour
     private int indicePunto;
     private float siguienteAtaque;
     private float pausaHasta;
+    private float finCongelado;
+
+    private static readonly System.Collections.Generic.List<Cascanueces> todos = new System.Collections.Generic.List<Cascanueces>();
+    public static System.Collections.Generic.IReadOnlyList<Cascanueces> Todos => todos;
+    public bool EstaCongelado => Time.time < finCongelado;
+
+    void OnEnable() => todos.Add(this);
+    void OnDisable() => todos.Remove(this);
+
+    public void Congelar(float segundos)
+    {
+        finCongelado = Time.time + segundos;
+        if (cuboHielo != null) cuboHielo.SetActive(true);
+        if (NivelManager.Instancia != null)
+            NivelManager.Instancia.MostrarAviso("¡Congelaste al Cascanueces!", new Color(0.6f, 0.9f, 1f));
+    }
 
     public EstadoCascanueces Estado => estadoActual;
 
     void Start()
     {
         agente = GetComponent<NavMeshAgent>();
+        if (cuboHielo != null) cuboHielo.SetActive(false);
 
         if (jugador == null)
         {
@@ -64,7 +82,12 @@ public class Cascanueces : MonoBehaviour
             return;
 
         bool enJuego = NivelManager.Instancia == null || NivelManager.Instancia.EnJuego;
-        bool aturdido = Time.time < pausaHasta;
+        if (cuboHielo != null && cuboHielo.activeSelf && !EstaCongelado)
+            cuboHielo.SetActive(false);
+        Saltarin sal = GetComponent<Saltarin>();
+        if (sal != null) sal.enabled = !EstaCongelado;
+
+        bool aturdido = Time.time < pausaHasta || EstaCongelado;
         agente.isStopped = !enJuego || aturdido || estadoActual == EstadoCascanueces.Atacar;
         if (!enJuego || aturdido)
             return;

@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -31,6 +30,11 @@ public class NivelManager : MonoBehaviour
     public Sprite spriteCorazon;
     public Sprite spriteCorazonVacio;
     public Image barraEnergia;
+    public Text textoPuntos;
+    public Text textoCombo;
+    [Tooltip("Velocidad, Bolas, Imán, Escudo")]
+    public CanvasGroup[] slotsPowerUp;
+    public Text[] textosPowerUp;
 
     [Header("Paneles")]
     public GameObject panelPausa;
@@ -56,6 +60,7 @@ public class NivelManager : MonoBehaviour
     public Button botonReintentar;
     public Button botonMenuGameOver;
     public Button botonMenuFinal;
+    public Button botonVerFinal;
 
     private readonly List<Juguete> juguetes = new List<Juguete>();
     private int total;
@@ -67,6 +72,13 @@ public class NivelManager : MonoBehaviour
     private bool pausado;
     private bool avisoFinalDado;
     private Coroutine rutinaAviso;
+    private Coroutine rutinaCombo;
+    private int puntos;
+    private int combo;
+    private float ultimoAtrapado = -100f;
+
+    public int Puntos => puntos;
+    public IReadOnlyList<Juguete> Juguetes => juguetes;
 
     public bool EnJuego => enJuego && !terminado && !pausado;
     public float TiempoJuego => tiempoJuego;
@@ -103,6 +115,8 @@ public class NivelManager : MonoBehaviour
         Conectar(botonReintentar, Reiniciar);
         Conectar(botonMenuGameOver, IrAlMenu);
         Conectar(botonMenuFinal, IrAlMenu);
+        Conectar(botonVerFinal, () => SceneLoader.Cargar("Final", "¡Feliz Navidad!"));
+        if (textoCombo != null) textoCombo.text = "";
     }
 
     void OnDestroy()
@@ -160,8 +174,7 @@ public class NivelManager : MonoBehaviour
 
     void Update()
     {
-        Keyboard k = Keyboard.current;
-        if (k != null && (k.escapeKey.wasPressedThisFrame || k.pKey.wasPressedThisFrame) && enJuego && !terminado && !SceneLoader.Cargando)
+        if (Entrada.Pausa() && enJuego && !terminado && !SceneLoader.Cargando)
         {
             if (pausado)
             {
@@ -177,6 +190,8 @@ public class NivelManager : MonoBehaviour
             barraEnergia.color = jugador.BoostActivo ? new Color(1f, 0.5f, 0.75f) :
                                  jugador.Agotado ? new Color(0.9f, 0.35f, 0.3f) : new Color(0.45f, 0.85f, 1f);
         }
+
+        ActualizarPowerUps();
 
         if (!EnJuego)
             return;
@@ -205,12 +220,66 @@ public class NivelManager : MonoBehaviour
         ActualizarContadores();
     }
 
-    public void JugueteAtrapado(Juguete j)
+    public void JugueteAtrapado(Juguete j, bool estabaCongelado)
     {
         atrapados++;
+
+        combo = Time.time - ultimoAtrapado <= 5f ? combo + 1 : 1;
+        ultimoAtrapado = Time.time;
+        int ganados = 100 * combo + (estabaCongelado ? 50 : 0);
+        puntos += ganados;
+
         ActualizarContadores();
         MostrarAviso("¡Atrapaste " + j.nombreJuguete + "!", new Color(0.6f, 1f, 0.6f));
+        string extra = estabaCongelado ? "\n<size=34>¡Congelado! +50</size>" : "";
+        MostrarCombo(combo >= 2 ? "¡Combo x" + combo + "!  +" + ganados + extra : "+" + ganados + extra, combo >= 2);
         RevisarFin();
+    }
+
+    void MostrarCombo(string texto, bool grande)
+    {
+        if (textoCombo == null) return;
+        if (rutinaCombo != null) StopCoroutine(rutinaCombo);
+        rutinaCombo = StartCoroutine(RutinaCombo(texto, grande));
+    }
+
+    IEnumerator RutinaCombo(string texto, bool grande)
+    {
+        textoCombo.text = texto;
+        textoCombo.fontSize = grande ? 64 : 48;
+        Color c = grande ? new Color(1f, 0.6f, 0.2f) : new Color(1f, 0.9f, 0.4f);
+        RectTransform rt = textoCombo.rectTransform;
+        Vector2 basePos = new Vector2(0f, -120f);
+        for (float t = 0f; t < 1.3f; t += Time.unscaledDeltaTime)
+        {
+            float a = t < 0.9f ? 1f : 1f - (t - 0.9f) / 0.4f;
+            textoCombo.color = new Color(c.r, c.g, c.b, a);
+            rt.anchoredPosition = basePos + new Vector2(0f, t * 40f);
+            rt.localScale = Vector3.one * (1f + Mathf.Max(0f, 0.3f - t) * 1.5f);
+            yield return null;
+        }
+        textoCombo.text = "";
+    }
+
+    void ActualizarPowerUps()
+    {
+        if (jugador == null || slotsPowerUp == null || slotsPowerUp.Length < 4) return;
+        bool[] activo =
+        {
+            jugador.BoostActivo, jugador.Bolas > 0, jugador.ImanActivo, jugador.TieneEscudo
+        };
+        string[] texto =
+        {
+            jugador.BoostActivo ? Mathf.CeilToInt(jugador.BoostRestante) + "s" : "",
+            "x" + jugador.Bolas,
+            jugador.ImanActivo ? Mathf.CeilToInt(jugador.ImanRestante) + "s" : "",
+            jugador.TieneEscudo ? "ON" : ""
+        };
+        for (int i = 0; i < 4; i++)
+        {
+            if (slotsPowerUp[i] != null) slotsPowerUp[i].alpha = activo[i] ? 1f : 0.3f;
+            if (textosPowerUp != null && i < textosPowerUp.Length && textosPowerUp[i] != null) textosPowerUp[i].text = texto[i];
+        }
     }
 
     public void JugueteEscapado(Juguete j)
@@ -247,6 +316,7 @@ public class NivelManager : MonoBehaviour
     {
         if (textoAtrapados != null) textoAtrapados.text = atrapados + " / " + total;
         if (textoEscapados != null) textoEscapados.text = escapados + " / " + maxEscapes;
+        if (textoPuntos != null) textoPuntos.text = puntos.ToString("N0") + " pts";
     }
 
     void ActualizarTiempo()
@@ -309,6 +379,7 @@ public class NivelManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(espera);
         if (panel == null) yield break;
         panel.SetActive(true);
+        UIFoco.Seleccionar(panel);
         Transform caja = panel.transform.childCount > 0 ? panel.transform.GetChild(0) : panel.transform;
         for (float x = 0f; x < 1f; x += Time.unscaledDeltaTime / 0.3f)
         {
@@ -335,9 +406,22 @@ public class NivelManager : MonoBehaviour
         if (numeroNivel < GameData.TotalNiveles)
             GameData.NivelDesbloqueado = Mathf.Max(GameData.NivelDesbloqueado, numeroNivel + 1);
 
-        string resumen = "Juguetes atrapados: " + atrapados + " / " + total +
-                         "\nEscapados: " + escapados +
-                         "\nTiempo restante: " + textoTiempo.text;
+        int bonusTiempo = Mathf.CeilToInt(Mathf.Max(0f, TiempoRestante)) * 5;
+        int bonusVidas = (jugador != null ? jugador.Vidas : 0) * 150;
+        int bonusPerfecto = escapados == 0 ? 500 : 0;
+        puntos += bonusTiempo + bonusVidas + bonusPerfecto;
+        ActualizarContadores();
+
+        float usado = Mathf.Min(tiempoJuego, tiempoLimite);
+        bool recordPuntos = GameData.GuardarPuntos(numeroNivel, puntos);
+        bool recordTiempo = GameData.GuardarTiempo(numeroNivel, usado);
+
+        string resumen = "Atrapados: " + atrapados + " / " + total + "   •   Escapados: " + escapados +
+                         "\nTiempo: " + GameData.FormatoTiempo(usado) +
+                         "\nBonos: tiempo +" + bonusTiempo + ", vidas +" + bonusVidas + (bonusPerfecto > 0 ? ", perfecto +500" : "") +
+                         "\n<size=46><color=#FFD24A>" + puntos.ToString("N0") + " pts</color></size>";
+        if (recordPuntos || recordTiempo)
+            resumen += "\n<color=#7CFF8A>¡Nuevo récord" + (recordPuntos && recordTiempo ? " de puntos y tiempo" : recordPuntos ? " de puntos" : " de tiempo") + "!</color>";
 
         if (numeroNivel >= GameData.TotalNiveles)
         {
@@ -400,6 +484,7 @@ public class NivelManager : MonoBehaviour
         pausado = false;
         Time.timeScale = 1f;
         AudioListener.pause = false;
+        UIFoco.Limpiar();
         if (panelPausa != null) panelPausa.SetActive(false);
         if (panelOpciones != null) panelOpciones.SetActive(false);
     }

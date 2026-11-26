@@ -8,6 +8,7 @@ public class MenuPrincipal : MonoBehaviour
     public GameObject panelPrincipal;
     public GameObject panelNiveles;
     public GameObject panelOpciones;
+    public GameObject panelRecords;
 
     [Header("Botones principales")]
     public Button botonJugar;
@@ -17,6 +18,9 @@ public class MenuPrincipal : MonoBehaviour
     public Button botonOpciones;
     public Button botonIntro;
     public Button botonSalir;
+    public Button botonRecords;
+    public Button botonVolverRecords;
+    public Text[] textosRecords; // 3 filas
     public Text textoPersonaje;
 
     [Header("Volver")]
@@ -53,6 +57,19 @@ public class MenuPrincipal : MonoBehaviour
         botonOpciones.onClick.AddListener(() => Mostrar(panelOpciones));
         botonIntro.onClick.AddListener(() => SceneLoader.Cargar("Intro", "Había una vez..."));
         botonSalir.onClick.AddListener(Salir);
+        botonRecords.onClick.AddListener(() => Mostrar(panelRecords));
+        botonVolverRecords.onClick.AddListener(() => Mostrar(panelPrincipal));
+
+        string[] nombresNivel = { "El Taller", "La Bodega", "El Patio Nevado" };
+        for (int i = 0; i < textosRecords.Length; i++)
+        {
+            int n = i + 1;
+            int pts = GameData.RecordPuntos(n);
+            float t = GameData.RecordTiempo(n);
+            textosRecords[i].text = "<color=#FFD24A>Nivel " + n + "</color>  " + nombresNivel[i] + "\n" +
+                (pts > 0 ? "Puntos: <b>" + pts.ToString("N0") + "</b>    Mejor tiempo: <b>" + GameData.FormatoTiempo(t) + "</b>    Estrellas: " + GameData.Estrellas(n) + "/3"
+                         : "<color=#9AA6C0>Sin récord todavía</color>");
+        }
 
         botonVolverNiveles.onClick.AddListener(() => Mostrar(panelPrincipal));
         botonVolverOpciones.onClick.AddListener(() => Mostrar(panelPrincipal));
@@ -84,6 +101,9 @@ public class MenuPrincipal : MonoBehaviour
 
     void Update()
     {
+        if (Entrada.Cancelar() && !panelPrincipal.activeSelf && !SceneLoader.Cargando)
+            Mostrar(panelPrincipal);
+
         if (titulo != null)
         {
             float s = 1f + Mathf.Sin(Time.unscaledTime * 2f) * 0.03f;
@@ -97,6 +117,9 @@ public class MenuPrincipal : MonoBehaviour
         panelPrincipal.SetActive(panel == panelPrincipal);
         panelNiveles.SetActive(panel == panelNiveles);
         panelOpciones.SetActive(panel == panelOpciones);
+        panelRecords.SetActive(panel == panelRecords);
+        if (panel == panelPrincipal) UIFoco.Seleccionar(botonJugar);
+        else UIFoco.Seleccionar(panel);
     }
 
     void Jugar()

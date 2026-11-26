@@ -32,6 +32,37 @@ public static class GameData
         set { PlayerPrefs.SetInt("Personaje", value); PlayerPrefs.Save(); }
     }
 
+    // ---------------- Récords ----------------
+
+    public static int RecordPuntos(int nivel) => PlayerPrefs.GetInt("RecordPuntos" + nivel, 0);
+
+    // Tiempo usado en segundos (0 = sin récord)
+    public static float RecordTiempo(int nivel) => PlayerPrefs.GetFloat("RecordTiempo" + nivel, 0f);
+
+    public static bool GuardarPuntos(int nivel, int puntos)
+    {
+        if (puntos <= RecordPuntos(nivel)) return false;
+        PlayerPrefs.SetInt("RecordPuntos" + nivel, puntos);
+        PlayerPrefs.Save();
+        return true;
+    }
+
+    public static bool GuardarTiempo(int nivel, float segundos)
+    {
+        float actual = RecordTiempo(nivel);
+        if (actual > 0f && segundos >= actual) return false;
+        PlayerPrefs.SetFloat("RecordTiempo" + nivel, segundos);
+        PlayerPrefs.Save();
+        return true;
+    }
+
+    public static string FormatoTiempo(float segundos)
+    {
+        int m = Mathf.FloorToInt(segundos / 60f);
+        int s = Mathf.FloorToInt(segundos % 60f);
+        return m + ":" + s.ToString("00");
+    }
+
     public static int Estrellas(int nivel) => PlayerPrefs.GetInt("Estrellas" + nivel, 0);
 
     public static void GuardarEstrellas(int nivel, int estrellas)

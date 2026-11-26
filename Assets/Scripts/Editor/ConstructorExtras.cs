@@ -344,6 +344,12 @@ public static partial class ConstructorJuego
         Texto("Ayuda", t, "A / D o flechas para cambiar  •  Enter para elegir", 24, new Color(1f, 1f, 1f, 0.6f), TextAnchor.LowerRight,
             new Vector2(1f, 0f), new Vector2(-30f, 25f), new Vector2(800f, 40f), false);
 
+        foreach (Button sinNav in new[] { sp.botonAnterior, sp.botonSiguiente, sp.botonVolver })
+        {
+            Navigation nv = sinNav.navigation;
+            nv.mode = Navigation.Mode.None;
+            sinNav.navigation = nv;
+        }
         sp.botonAnterior.transform.SetAsLastSibling();
         sp.botonSiguiente.transform.SetAsLastSibling();
 
@@ -400,10 +406,11 @@ public static partial class ConstructorJuego
         {
             float x = minX - 35f + (float)r.NextDouble() * (maxX - minX + 70f);
             float z = minZ - 4f + (float)r.NextDouble() * (maxZ - minZ + 45f);
-            bool dentro = x > minX - 3f && x < maxX + 3f && z > minZ - 3f && z < maxZ + 3f;
+            bool dentro = x > minX - 8f && x < maxX + 8f && z > minZ - 8f && z < maxZ + 5f;
             if (dentro) continue;
-            if (z < minZ + 2f && x > minX - 6f && x < maxX + 6f) continue; // frente libre para la cámara
-            float esc = 1.3f + (float)r.NextDouble() * 1.1f;
+            if (z < maxZ && x > minX - 14f && x < maxX + 14f && z < minZ + 6f) continue; // frente libre para la cámara
+            bool cercaLado = (x > minX - 14f && x < maxX + 14f) && z < maxZ + 4f;
+            float esc = cercaLado ? 1.0f + (float)r.NextDouble() * 0.5f : 1.3f + (float)r.NextDouble() * 1.0f;
             Poner(pinos[r.Next(pinos.Length)], new Vector3(x, 0f, z), r.Next(0, 360), esc, ext);
         }
 

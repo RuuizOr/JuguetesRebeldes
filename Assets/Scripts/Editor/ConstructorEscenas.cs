@@ -208,15 +208,6 @@ public static partial class ConstructorJuego
         cn.puntosPatrulla = ps;
     }
 
-    static void PonerBastones(Vector3[] posiciones, Transform padre)
-    {
-        foreach (Vector3 p in posiciones)
-        {
-            GameObject b = (GameObject)PrefabUtility.InstantiatePrefab(prefabBaston, padre);
-            b.transform.position = p;
-        }
-    }
-
     // =====================================================================
     // Niveles
     // =====================================================================
@@ -285,8 +276,10 @@ public static partial class ConstructorJuego
             {
                 new Vector3(-6f, 0.2f, 8f), new Vector3(6f, 0.2f, 8f), new Vector3(-10f, 0.2f, 0f),
                 new Vector3(10.5f, 0.2f, 1f), new Vector3(-3f, 0.2f, -3f)
-            }, new[] { "jengibre", "galleta", "reno", "robot", "tren" }, new Vector2(35f, 70f), actores);
-            PonerBastones(new[] { new Vector3(11f, 0.2f, -6f) }, actores);
+            }, new[] { "jengibre", "galleta", "reno", "robot", "tren" }, new Vector2(50f, 95f), actores);
+            PonerPowerUps(actores, (TipoPowerUp.Velocidad, new Vector3(11f, 0.2f, -6f)), (TipoPowerUp.BolaNieve, new Vector3(-11f, 0.2f, -2f)),
+                (TipoPowerUp.Escudo, new Vector3(2f, 0.2f, -5.5f)), (TipoPowerUp.Iman, new Vector3(-4f, 0.2f, 8.5f)));
+            tamanoMapa = 31f;
         }
         else if (n == 2)
         {
@@ -321,7 +314,7 @@ public static partial class ConstructorJuego
                 new Vector3(-14.5f, 0.2f, 8f), new Vector3(14.5f, 0.2f, -8f), new Vector3(-7.5f, 0.2f, -12f),
                 new Vector3(7.5f, 0.2f, 12f), new Vector3(-7.5f, 0.2f, 5f), new Vector3(7.5f, 0.2f, -5f),
                 new Vector3(-14.5f, 0.2f, -6f), new Vector3(14.5f, 0.2f, 6f)
-            }, new[] { "reno", "soldado", "jengibre", "nieve", "robot", "galleta", "tren", "soldado" }, new Vector2(28f, 55f), actores);
+            }, new[] { "reno", "soldado", "jengibre", "nieve", "robot", "galleta", "tren", "soldado" }, new Vector2(38f, 70f), actores);
 
             PonerCascanueces(new[]
             {
@@ -329,7 +322,10 @@ public static partial class ConstructorJuego
                 new Vector3(7.5f, 0.2f, 0f), new Vector3(-7.5f, 0.2f, 0f), new Vector3(-14.5f, 0.2f, 0f), new Vector3(-14.5f, 0.2f, 12f)
             }, jugador.transform, "Cascanueces", actores);
 
-            PonerBastones(new[] { new Vector3(-14.5f, 0.2f, -13f), new Vector3(14.5f, 0.2f, 13f) }, actores);
+            PonerPowerUps(actores, (TipoPowerUp.Velocidad, new Vector3(-14.5f, 0.2f, -13f)), (TipoPowerUp.Velocidad, new Vector3(14.5f, 0.2f, 13f)),
+                (TipoPowerUp.BolaNieve, new Vector3(0f, 0.2f, -7f)), (TipoPowerUp.BolaNieve, new Vector3(0f, 0.2f, 8f)),
+                (TipoPowerUp.Escudo, new Vector3(-7.5f, 0.2f, -12.5f)), (TipoPowerUp.Iman, new Vector3(-14.5f, 0.2f, 3f)));
+            tamanoMapa = 39f;
         }
         else
         {
@@ -442,11 +438,14 @@ public static partial class ConstructorJuego
                 new Vector3(-15f, 0f, 5f), new Vector3(15f, 0f, -3f), new Vector3(-7f, 0f, 0f), new Vector3(7f, 0f, 2f),
                 new Vector3(-3f, 0f, 9f), new Vector3(4f, 0f, 10f), new Vector3(-12f, 0f, -12f), new Vector3(12f, 0f, -13f),
                 new Vector3(-17f, 0f, 13f), new Vector3(17f, 0f, 10f)
-            }, new[] { "nieve", "reno", "robot", "jengibre", "soldado", "galleta", "tren", "reno", "nieve", "robot" }, new Vector2(22f, 45f), actores);
+            }, new[] { "nieve", "reno", "robot", "jengibre", "soldado", "galleta", "tren", "reno", "nieve", "robot" }, new Vector2(30f, 60f), actores);
 
             PonerCascanueces(new[] { new Vector3(12f, 0f, 12f), new Vector3(17f, 0f, -5f), new Vector3(6f, 0f, -2f) }, jugador.transform, "CascanuecesEste", actores);
             PonerCascanueces(new[] { new Vector3(-12f, 0f, 12f), new Vector3(-16f, 0f, -6f), new Vector3(-6f, 0f, -2f) }, jugador.transform, "CascanuecesOeste", actores);
-            PonerBastones(new[] { new Vector3(-17f, 0f, -16f), new Vector3(17f, 0f, -16f), new Vector3(0f, 0f, 13f) }, actores);
+            PonerPowerUps(actores, (TipoPowerUp.Velocidad, new Vector3(-17f, 0f, -16f)), (TipoPowerUp.Velocidad, new Vector3(17f, 0f, -16f)),
+                (TipoPowerUp.Velocidad, new Vector3(0f, 0f, 13f)), (TipoPowerUp.BolaNieve, new Vector3(-6f, 0f, -12f)), (TipoPowerUp.BolaNieve, new Vector3(5f, 0f, -14f)),
+                (TipoPowerUp.Escudo, new Vector3(0f, 0f, -6f)), (TipoPowerUp.Escudo, new Vector3(15.5f, 0f, 8f)), (TipoPowerUp.Iman, new Vector3(-15f, 0f, -8f)));
+            tamanoMapa = 44f;
         }
 
         nm.jugador = jugador.GetComponent<DuendeController>();
@@ -469,6 +468,8 @@ public static partial class ConstructorJuego
     // =====================================================================
     // HUD y paneles del nivel
     // =====================================================================
+
+    static float tamanoMapa = 32f;
 
     static void CrearHUD(NivelManager nm)
     {
@@ -504,9 +505,67 @@ public static partial class ConstructorJuego
         Colocar(icr.rectTransform, new Vector2(0f, 0.5f), new Vector2(20f, 0f), new Vector2(64f, 64f));
         nm.textoTiempo = Texto("TextoTiempo", reloj.transform, "2:30", 62, Color.white, TextAnchor.MiddleCenter, new Vector2(1f, 0.5f), new Vector2(-15f, 0f), new Vector2(190f, 90f));
 
-        nm.textoNivel = Texto("TextoNivel", t, "Nivel", 34, new Color(1f, 0.85f, 0.4f), TextAnchor.UpperRight, new Vector2(1f, 1f), new Vector2(-30f, -30f), new Vector2(800f, 60f));
-        Texto("Controles", t, "WASD mover   •   Espacio saltar   •   Shift correr   •   Esc pausa", 24, new Color(1f, 1f, 1f, 0.7f),
-            TextAnchor.LowerLeft, new Vector2(0f, 0f), new Vector2(30f, 25f), new Vector2(1100f, 40f), false);
+        nm.textoNivel = Texto("TextoNivel", t, "Nivel", 32, new Color(1f, 0.85f, 0.4f), TextAnchor.UpperRight, new Vector2(1f, 1f), new Vector2(-28f, -28f), new Vector2(800f, 50f));
+        Texto("Controles", t, "WASD/Stick mover  •  Espacio/A saltar  •  Shift/RT correr  •  E/Clic/X lanzar bola  •  Esc/Start pausa", 22, new Color(1f, 1f, 1f, 0.7f),
+            TextAnchor.LowerLeft, new Vector2(0f, 0f), new Vector2(30f, 22f), new Vector2(1300f, 36f), false);
+
+        // Power-ups activos
+        string[] iconosPU = { "rayo", "bola_nieve", "iman", "escudo" };
+        nm.slotsPowerUp = new CanvasGroup[4];
+        nm.textosPowerUp = new Text[4];
+        for (int i = 0; i < 4; i++)
+        {
+            Image slot = Panel("PowerUp" + i, t, new Vector2(0f, 0f), new Vector2(30f + i * 100f, 70f), new Vector2(90f, 90f), new Color(0.05f, 0.07f, 0.14f, 0.8f));
+            slot.raycastTarget = false;
+            nm.slotsPowerUp[i] = slot.gameObject.AddComponent<CanvasGroup>();
+            Image ic = Imagen("Icono", slot.transform, SpriteUI(iconosPU[i]), Color.white);
+            Colocar(ic.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 6f), new Vector2(56f, 56f));
+            ic.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            nm.textosPowerUp[i] = Texto("Texto", slot.transform, "", 24, Color.white, TextAnchor.LowerRight, new Vector2(1f, 0f), new Vector2(-6f, 2f), new Vector2(80f, 30f));
+        }
+
+        // Puntos y combo
+        nm.textoPuntos = Texto("TextoPuntos", t, "0 pts", 38, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0f, -128f), new Vector2(500f, 50f));
+        Text combo = Texto("TextoCombo", t, "", 56, new Color(1f, 0.6f, 0.2f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0f, -120f), new Vector2(1200f, 160f));
+        combo.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        nm.textoCombo = combo;
+
+        // Minimapa
+        Image marco = Panel("Minimapa", t, new Vector2(1f, 1f), new Vector2(-25f, -80f), new Vector2(300f, 300f), new Color(0.05f, 0.07f, 0.14f, 0.85f));
+        marco.raycastTarget = false;
+        marco.gameObject.AddComponent<RectMask2D>();
+        GameObject rawGo = new GameObject("Mapa", typeof(RectTransform), typeof(RawImage));
+        RectTransform rawRt = Rect(rawGo, marco.transform);
+        Estirar(rawRt);
+        rawRt.offsetMin = new Vector2(8f, 8f);
+        rawRt.offsetMax = new Vector2(-8f, -8f);
+        RawImage raw = rawGo.GetComponent<RawImage>();
+        raw.raycastTarget = false;
+        raw.color = new Color(0.85f, 0.85f, 0.95f);
+        MiniMapa mm = marco.gameObject.AddComponent<MiniMapa>();
+        mm.fondo = raw;
+        mm.contenedor = rawRt;
+        mm.centro = nm.centroNivel;
+        mm.tamano = tamanoMapa;
+        mm.spritePunto = SpriteKnob;
+        mm.spriteJugador = SpriteUI("flecha_der");
+        GameObject camMapa = new GameObject("CamaraMinimapa");
+        Camera cm = camMapa.AddComponent<Camera>();
+        cm.clearFlags = CameraClearFlags.SolidColor;
+        cm.backgroundColor = new Color(0.75f, 0.8f, 0.9f);
+        cm.depth = -10f;
+        cm.orthographic = true;
+        cm.farClipPlane = 100f;
+        UnityEngine.Rendering.Universal.CameraExtensions.GetUniversalAdditionalCameraData(cm).renderPostProcessing = false;
+        mm.camaraMapa = cm;
+
+        // Flechas indicadoras
+        GameObject ind = new GameObject("Indicadores", typeof(RectTransform));
+        RectTransform indRt = Rect(ind, t);
+        Estirar(indRt);
+        Indicadores indicadores = ind.AddComponent<Indicadores>();
+        indicadores.area = indRt;
+        indicadores.spriteFlecha = SpriteUI("flecha_der");
 
         // Energía
         Image energia = Panel("Energia", t, new Vector2(0.5f, 0f), new Vector2(0f, 35f), new Vector2(560f, 70f), new Color(0.05f, 0.07f, 0.14f, 0.75f));
@@ -527,7 +586,7 @@ public static partial class ConstructorJuego
         centro.GetComponent<Outline>().effectDistance = new Vector2(4f, -4f);
         nm.textoCentro = centro;
 
-        Text aviso = Texto("TextoAviso", t, "", 44, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1500f, 70f));
+        Text aviso = Texto("TextoAviso", t, "", 42, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0f, -190f), new Vector2(1200f, 70f));
         nm.textoAviso = aviso;
 
         // ---- Pausa ----
@@ -545,7 +604,7 @@ public static partial class ConstructorJuego
         nm.botonVolverOpciones = volver;
 
         // ---- Completado ----
-        RectTransform cc = CrearPanelModal("PanelCompletado", t, new Vector2(820f, 640f), "¡Nivel completado!", new Color(1f, 0.85f, 0.3f), out GameObject completado);
+        RectTransform cc = CrearPanelModal("PanelCompletado", t, new Vector2(900f, 740f), "¡Nivel completado!", new Color(1f, 0.85f, 0.3f), out GameObject completado);
         nm.panelCompletado = completado;
         nm.estrellas = new Image[3];
         for (int i = 0; i < 3; i++)
@@ -557,7 +616,7 @@ public static partial class ConstructorJuego
         }
         nm.spriteEstrella = SpriteUI("estrella");
         nm.spriteEstrellaVacia = SpriteUI("estrella_vacia");
-        nm.textoResumen = Texto("TextoResumen", cc, "", 34, Color.white, TextAnchor.MiddleCenter, arriba, new Vector2(0f, -290f), new Vector2(720f, 170f), false);
+        nm.textoResumen = Texto("TextoResumen", cc, "", 32, Color.white, TextAnchor.UpperCenter, arriba, new Vector2(0f, -275f), new Vector2(840f, 300f), false);
         nm.botonSiguiente = Boton("BotonSiguiente", cc, "Siguiente nivel", new Vector2(0.5f, 0f), new Vector2(-190f, 40f), new Vector2(340f, 85f), ColorBoton);
         nm.botonMenuCompletado = Boton("BotonMenu", cc, "Menú", new Vector2(0.5f, 0f), new Vector2(190f, 40f), new Vector2(340f, 85f), ColorBotonAzul);
 
@@ -569,15 +628,16 @@ public static partial class ConstructorJuego
         nm.botonMenuGameOver = Boton("BotonMenu", cg, "Menú", new Vector2(0.5f, 0f), new Vector2(180f, 40f), new Vector2(320f, 85f), ColorBotonRojo);
 
         // ---- Victoria final ----
-        RectTransform cv = CrearPanelModal("PanelVictoriaFinal", t, new Vector2(960f, 720f), "¡Salvaste la Navidad!", new Color(1f, 0.85f, 0.3f), out GameObject victoria);
+        RectTransform cv = CrearPanelModal("PanelVictoriaFinal", t, new Vector2(980f, 800f), "¡Salvaste la Navidad!", new Color(1f, 0.85f, 0.3f), out GameObject victoria);
         nm.panelVictoriaFinal = victoria;
         Image regalo = Imagen("Regalo", cv, SpriteUI("regalo"), Color.white);
         Colocar(regalo.rectTransform, arriba, new Vector2(0f, -140f), new Vector2(120f, 120f));
         regalo.gameObject.AddComponent<Girar>().tiempoSinEscala = true;
         regalo.GetComponent<Girar>().velocidad = 0f;
         regalo.GetComponent<Girar>().amplitud = 8f;
-        nm.textoResumenFinal = Texto("TextoResumen", cv, "", 34, Color.white, TextAnchor.MiddleCenter, arriba, new Vector2(0f, -290f), new Vector2(860f, 280f), false);
-        nm.botonMenuFinal = Boton("BotonMenu", cv, "Menú principal", new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(400f, 85f), ColorBoton);
+        nm.textoResumenFinal = Texto("TextoResumen", cv, "", 30, Color.white, TextAnchor.UpperCenter, arriba, new Vector2(0f, -270f), new Vector2(900f, 380f), false);
+        nm.botonVerFinal = Boton("BotonVerFinal", cv, "Ver el final", new Vector2(0.5f, 0f), new Vector2(-200f, 40f), new Vector2(360f, 85f), ColorBoton);
+        nm.botonMenuFinal = Boton("BotonMenu", cv, "Menú principal", new Vector2(0.5f, 0f), new Vector2(200f, 40f), new Vector2(360f, 85f), ColorBotonAzul);
     }
 
     // =====================================================================
@@ -873,20 +933,33 @@ public static partial class ConstructorJuego
         mp.botonJugar.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
         mp.textoJugar = mp.botonJugar.GetComponentInChildren<Text>();
 
-        string[] etiquetas = { "Personaje", "Niveles", "Opciones", "Ver intro", "Salir" };
-        string[] iconos = { "persona", "bandera", "engrane", "play", "salir" };
-        Button[] fila = new Button[5];
-        for (int i = 0; i < 5; i++)
+        string[] etiquetas = { "Personaje", "Niveles", "Récords", "Opciones", "Ver intro", "Salir" };
+        string[] iconos = { "persona", "bandera", "estrella", "engrane", "play", "salir" };
+        Button[] fila = new Button[6];
+        for (int i = 0; i < 6; i++)
         {
-            fila[i] = BotonIcono("Boton" + etiquetas[i].Replace(" ", ""), principal.transform, etiquetas[i], iconos[i], ab,
-                new Vector2((i - 2) * 300f, 60f), new Vector2(280f, 100f), i == 4 ? ColorBotonRojo : ColorBotonAzul, 34);
+            fila[i] = BotonIcono("Boton" + etiquetas[i].Replace(" ", "").Replace("é", "e"), principal.transform, etiquetas[i], iconos[i], ab,
+                new Vector2((i - 2.5f) * 285f, 60f), new Vector2(268f, 96f), i == 5 ? ColorBotonRojo : ColorBotonAzul, 32);
             fila[i].GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
         }
         mp.botonPersonaje = fila[0];
         mp.botonNiveles = fila[1];
-        mp.botonOpciones = fila[2];
-        mp.botonIntro = fila[3];
-        mp.botonSalir = fila[4];
+        mp.botonRecords = fila[2];
+        mp.botonOpciones = fila[3];
+        mp.botonIntro = fila[4];
+        mp.botonSalir = fila[5];
+
+        // Récords
+        RectTransform cr = CrearPanelModal("PanelRecords", t, new Vector2(1250f, 660f), "Récords", new Color(1f, 0.85f, 0.3f), out GameObject records);
+        mp.panelRecords = records;
+        mp.textosRecords = new Text[3];
+        for (int i = 0; i < 3; i++)
+        {
+            Image fila2 = Imagen("Fila" + (i + 1), cr, SpriteRedondeado, new Color(1f, 1f, 1f, 0.06f), true);
+            Colocar(fila2.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -135f - i * 135f), new Vector2(1130f, 120f));
+            mp.textosRecords[i] = Texto("Texto", fila2.transform, "", 34, Color.white, TextAnchor.MiddleLeft, new Vector2(0f, 0.5f), new Vector2(30f, 0f), new Vector2(1080f, 110f), false);
+        }
+        mp.botonVolverRecords = Boton("BotonVolver", cr, "Volver", new Vector2(0.5f, 0f), new Vector2(0f, 35f), new Vector2(320f, 80f), ColorBotonAzul);
 
         // Niveles
         RectTransform cn = CrearPanelModal("PanelNiveles", t, new Vector2(1150f, 660f), "Elige un nivel", new Color(1f, 0.85f, 0.3f), out GameObject niveles);

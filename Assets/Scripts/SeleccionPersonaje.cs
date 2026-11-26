@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 // Pantalla para elegir el personaje con el que se juega.
@@ -43,16 +42,16 @@ public class SeleccionPersonaje : MonoBehaviour
         botonVolver.onClick.AddListener(() => SceneLoader.Cargar("MenuPrincipal", "Juguetes Rebeldes"));
 
         Mostrar(false);
+        UIFoco.Seleccionar(botonElegir);
     }
 
     void Update()
     {
-        Keyboard k = Keyboard.current;
-        if (k == null || SceneLoader.Cargando) return;
-        if (k.aKey.wasPressedThisFrame || k.leftArrowKey.wasPressedThisFrame) Cambiar(-1);
-        if (k.dKey.wasPressedThisFrame || k.rightArrowKey.wasPressedThisFrame) Cambiar(1);
-        if (k.enterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame) Elegir();
-        if (k.escapeKey.wasPressedThisFrame) SceneLoader.Cargar("MenuPrincipal", "Juguetes Rebeldes");
+        if (SceneLoader.Cargando || !botonElegir.interactable) return;
+        int cambio = Entrada.CambioHorizontal();
+        if (cambio != 0) Cambiar(cambio);
+        if (Entrada.Cancelar()) SceneLoader.Cargar("MenuPrincipal", "Juguetes Rebeldes");
+        // Enter / Espacio / botón A eligen mediante el botón seleccionado (EventSystem)
     }
 
     void Cambiar(int dir)

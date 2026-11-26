@@ -1,7 +1,8 @@
+using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-// Pino, el duende: movimiento, sprint, salto, vidas y animaciones.
+// Personaje del jugador: movimiento, sprint, salto, vidas, power-ups y animaciones.
+// Funciona con teclado/mouse y con gamepad (ver Entrada.cs).
 [RequireComponent(typeof(CharacterController))]
 public class DuendeController : MonoBehaviour
 {
@@ -23,12 +24,21 @@ public class DuendeController : MonoBehaviour
     public int vidasMaximas = 3;
     public float tiempoInvulnerable = 2f;
 
+    [Header("Power-ups")]
+    public GameObject prefabBolaNieve;
+    public float fuerzaLanzamiento = 17f;
+    public float radioIman = 5f;
+    public GameObject burbujaEscudo;
+    public ParticleSystem efectoIman;
+    public GameObject efectoEscudoRoto;
+
     [Header("Referencias")]
     public Animator animator;
     [Tooltip("Un modelo por personaje (mismo orden que Personajes.Lista)")]
     public GameObject[] modelos;
     public Animator[] animadores;
     public ParticleSystem efectoBoost;
+    public Transform costal;
 
     private CharacterController controller;
     private Renderer[] renderers;
@@ -40,10 +50,14 @@ public class DuendeController : MonoBehaviour
     private int vidas;
     private float finInvulnerable;
     private float finBoost;
+    private float finIman;
     private bool muerto;
     private int zonasHielo;
     private float ultimoSuelo;
     private Vector3 puntoInicio;
+    private int bolas;
+    private bool escudo;
+    private Vector3 escalaCostal = Vector3.one;
 
     public bool Bloqueado { get; set; }
     public bool Muerto => muerto;
@@ -52,6 +66,12 @@ public class DuendeController : MonoBehaviour
     public bool Agotado => agotado;
     public bool EnHielo => zonasHielo > 0;
     public bool BoostActivo => Time.time < finBoost;
+    public float BoostRestante => Mathf.Max(0f, finBoost - Time.time);
+    public bool ImanActivo => Time.time < finIman;
+    public float ImanRestante => Mathf.Max(0f, finIman - Time.time);
+    public int Bolas => bolas;
+    public bool TieneEscudo => escudo;
+    public Vector3 PosicionCostal => costal != null ? costal.position : transform.position + Vector3.up;
 
     void Awake()
     {
@@ -60,6 +80,8 @@ public class DuendeController : MonoBehaviour
         renderers = GetComponentsInChildren<Renderer>();
         vidas = vidasMaximas;
         energia = energiaMaxima;
+        if (burbujaEscudo != null) burbujaEscudo.SetActive(false);
+        if (costal != null) escalaCostal = costal.localScale;
     }
 
     void AplicarPersonaje()
@@ -97,17 +119,15 @@ public class DuendeController : MonoBehaviour
         Vector3 direccion = Vector3.zero;
         bool quiereSprint = false;
         bool salto = false;
+        bool lanzar = false;
 
-        Keyboard k = Keyboard.current;
-        if (k != null && !Bloqueado && !muerto)
+        if (!Bloqueado && !muerto)
         {
-            if (k.aKey.isPressed || k.leftArrowKey.isPressed) direccion.x -= 1f;
-            if (k.dKey.isPressed || k.rightArrowKey.isPressed) direccion.x += 1f;
-            if (k.wKey.isPressed || k.upArrowKey.isPressed) direccion.z += 1f;
-            if (k.sKey.isPressed || k.downArrowKey.isPressed) direccion.z -= 1f;
-            direccion = Vector3.ClampMagnitude(direccion, 1f);
-            quiereSprint = (k.leftShiftKey.isPressed || k.rightShiftKey.isPressed) && direccion.sqrMagnitude > 0.01f;
-            salto = k.spaceKey.wasPressedThisFrame;
+            Vector2 m = Entrada.Mover();
+            direccion = new Vector3(m.x, 0f, m.y);
+            quiereSprint = Entrada.Correr() && direccion.sqrMagnitude > 0.01f;
+            salto = Entrada.Saltar();
+            lanzar = Entrada.Lanzar();
         }
 
         // Energía del sprint
@@ -157,6 +177,9 @@ public class DuendeController : MonoBehaviour
             AudioManager.SFX("salto", 0.7f);
         }
 
+        if (lanzar)
+            LanzarBola();
+
         velocidadY += gravedad * dt;
         empuje = Vector3.MoveTowards(empuje, Vector3.zero, 14f * dt);
 
@@ -169,17 +192,13 @@ public class DuendeController : MonoBehaviour
             animator.SetBool("EnSuelo", enSuelo);
         }
 
-        if (efectoBoost != null)
-        {
-            if (BoostActivo && !efectoBoost.isPlaying) efectoBoost.Play();
-            else if (!BoostActivo && efectoBoost.isPlaying) efectoBoost.Stop();
-        }
+        ActualizarEfectos();
 
         // Parpadeo de invulnerabilidad
         bool invulnerable = Time.time < finInvulnerable && !muerto;
         bool visible = !invulnerable || Mathf.FloorToInt(Time.time * 12f) % 2 == 0;
         foreach (Renderer r in renderers)
-            if (r != null && !(r is ParticleSystemRenderer))
+            if (r != null && !(r is ParticleSystemRenderer) && (burbujaEscudo == null || !r.transform.IsChildOf(burbujaEscudo.transform)))
                 r.enabled = visible;
 
         // Caída fuera del mapa
@@ -190,6 +209,76 @@ public class DuendeController : MonoBehaviour
             RecibirDanio(1, transform.position);
         }
     }
+
+    void ActualizarEfectos()
+    {
+        if (efectoBoost != null)
+        {
+            if (BoostActivo && !efectoBoost.isPlaying) efectoBoost.Play();
+            else if (!BoostActivo && efectoBoost.isPlaying) efectoBoost.Stop();
+        }
+
+        if (efectoIman != null)
+        {
+            if (ImanActivo && !efectoIman.isPlaying) efectoIman.Play();
+            else if (!ImanActivo && efectoIman.isPlaying) efectoIman.Stop();
+        }
+
+        if (burbujaEscudo != null)
+        {
+            burbujaEscudo.SetActive(escudo);
+            if (escudo)
+            {
+                float s = 1f + Mathf.Sin(Time.time * 4f) * 0.04f;
+                burbujaEscudo.transform.localScale = Vector3.one * 2.4f * s;
+            }
+        }
+    }
+
+    // ---------------- Power-ups ----------------
+
+    void LanzarBola()
+    {
+        if (bolas <= 0 || prefabBolaNieve == null)
+            return;
+
+        bolas--;
+        Vector3 origen = transform.position + Vector3.up * 1.2f + transform.forward * 0.7f;
+        GameObject b = Instantiate(prefabBolaNieve, origen, Quaternion.identity);
+        Rigidbody rb = b.GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.linearVelocity = transform.forward * fuerzaLanzamiento + Vector3.up * 3f + new Vector3(velocidadPlano.x, 0f, velocidadPlano.z) * 0.5f;
+        AudioManager.SFX("salto", 0.6f, 0.2f);
+    }
+
+    public void AgregarBolas(int cantidad) => bolas = Mathf.Min(bolas + cantidad, 9);
+    public void ActivarEscudo() => escudo = true;
+    public void ActivarIman(float segundos) => finIman = Time.time + segundos;
+
+    public void ActivarBoost(float segundos)
+    {
+        finBoost = Time.time + segundos;
+        energia = energiaMaxima;
+        agotado = false;
+    }
+
+    public void SacudirCostal()
+    {
+        if (costal != null)
+            StartCoroutine(PopCostal());
+    }
+
+    IEnumerator PopCostal()
+    {
+        for (float x = 0f; x < 1f; x += Time.deltaTime / 0.25f)
+        {
+            costal.localScale = escalaCostal * (1f + Mathf.Sin(x * Mathf.PI) * 0.35f);
+            yield return null;
+        }
+        costal.localScale = escalaCostal;
+    }
+
+    // ---------------- Daño ----------------
 
     public void Teletransportar(Vector3 posicion)
     {
@@ -205,14 +294,26 @@ public class DuendeController : MonoBehaviour
         if (muerto || Time.time < finInvulnerable)
             return;
 
-        vidas = Mathf.Max(0, vidas - cantidad);
-        finInvulnerable = Time.time + tiempoInvulnerable;
-
         Vector3 dir = transform.position - origen;
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.01f) dir = -transform.forward;
         empuje = dir.normalized * 13f;
         velocidadY = 5f;
+
+        if (escudo)
+        {
+            escudo = false;
+            finInvulnerable = Time.time + 1.2f;
+            AudioManager.SFX("pop");
+            if (efectoEscudoRoto != null)
+                Instantiate(efectoEscudoRoto, transform.position + Vector3.up, Quaternion.identity);
+            if (NivelManager.Instancia != null)
+                NivelManager.Instancia.MostrarAviso("¡El escudo te protegió!", new Color(0.6f, 0.85f, 1f));
+            return;
+        }
+
+        vidas = Mathf.Max(0, vidas - cantidad);
+        finInvulnerable = Time.time + tiempoInvulnerable;
 
         AudioManager.SFX("dano");
         CamaraSeguimiento.Sacudir(0.45f);
@@ -233,13 +334,6 @@ public class DuendeController : MonoBehaviour
 
         if (NivelManager.Instancia != null)
             NivelManager.Instancia.JugadorMurio();
-    }
-
-    public void ActivarBoost(float segundos)
-    {
-        finBoost = Time.time + segundos;
-        energia = energiaMaxima;
-        agotado = false;
     }
 
     public void Celebrar()

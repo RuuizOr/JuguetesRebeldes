@@ -31,7 +31,7 @@ public static partial class ConstructorJuego
         new TipoJuguete("soldado", "el soldadito", "character-knight", true, 1.3f, 0.8136f),
     };
 
-    static GameObject prefabDuende, prefabCascanueces, prefabBaston, prefabPuertaLuz;
+    static GameObject prefabDuende, prefabCascanueces;
     static GameObject efectoAtrapar, efectoEscape, efectoPowerUp;
     static RuntimeAnimatorController ctrlDuende;
     static readonly System.Collections.Generic.Dictionary<string, GameObject> prefabsJuguete = new System.Collections.Generic.Dictionary<string, GameObject>();
@@ -44,9 +44,9 @@ public static partial class ConstructorJuego
 
         ctrlDuende = CrearControlador("Duende", RutaPersonajes + "/character-soldier.fbx", true);
         CrearControladoresPersonajes();
+        CrearPrefabsPowerUps();
         prefabDuende = CrearPrefabDuende();
         prefabCascanueces = CrearPrefabCascanueces();
-        prefabBaston = CrearPrefabBaston();
 
         prefabsJuguete.Clear();
         foreach (TipoJuguete t in Tipos)
@@ -204,6 +204,7 @@ public static partial class ConstructorJuego
         sol.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 1f, 1f, 0f));
         dc.efectoBoost = ps;
 
+        ExtrasJugador(root, dc);
         IgnorarNavMesh(root);
         return GuardarPrefab(root, "Duende");
     }
@@ -228,6 +229,9 @@ public static partial class ConstructorJuego
 
         Cascanueces cn = root.AddComponent<Cascanueces>();
         GameObject m = ModeloEstatico("nutcracker", 3.3f, root.transform);
+        AgregarContorno(m, matContorno);
+        Sombra(root.transform, 2.4f);
+        cn.cuboHielo = CuboHielo(root.transform, new Vector3(2f, 3.8f, 2f));
 
         Saltarin sal = root.AddComponent<Saltarin>();
         sal.modelo = m.transform;
@@ -243,32 +247,6 @@ public static partial class ConstructorJuego
 
         IgnorarNavMesh(root);
         return GuardarPrefab(root, "Cascanueces");
-    }
-
-    static GameObject CrearPrefabBaston()
-    {
-        GameObject root = new GameObject("BastonDulce");
-        SphereCollider sc = root.AddComponent<SphereCollider>();
-        sc.isTrigger = true;
-        sc.radius = 0.9f;
-        sc.center = new Vector3(0f, 0.9f, 0f);
-        Rigidbody rb = root.AddComponent<Rigidbody>();
-        rb.isKinematic = true;
-        rb.useGravity = false;
-        PowerUpBaston pu = root.AddComponent<PowerUpBaston>();
-        pu.efecto = efectoPowerUp;
-
-        GameObject giro = new GameObject("Giro");
-        giro.transform.SetParent(root.transform, false);
-        giro.transform.localPosition = new Vector3(0f, 0.35f, 0f);
-        Girar g = giro.AddComponent<Girar>();
-        g.velocidad = 120f;
-        g.amplitud = 0.2f;
-        ModeloEstatico("candy-cane-red", 1.3f, giro.transform);
-        Luz("Brillo", Vector3.zero, new Color(1f, 0.5f, 0.6f), 2f, 4f, root.transform).transform.localPosition = new Vector3(0f, 1f, 0f);
-
-        IgnorarNavMesh(root);
-        return GuardarPrefab(root, "BastonDulce");
     }
 
     static GameObject CrearPrefabJuguete(TipoJuguete t)
@@ -313,6 +291,10 @@ public static partial class ConstructorJuego
             s.frecuencia = 11f;
             s.inclinacion = 12f;
         }
+
+        AgregarContorno(root, matContornoJuguete);
+        Sombra(root.transform, 1.4f);
+        j.cuboHielo = CuboHielo(root.transform, new Vector3(1.4f, t.altura + 0.4f, 1.4f));
 
         GameObject et = new GameObject("Etiqueta");
         et.transform.SetParent(root.transform, false);

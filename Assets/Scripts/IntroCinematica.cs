@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 // Cinemática de introducción: tomas de cámara con subtítulos que cuentan la historia.
@@ -65,11 +64,7 @@ public class IntroCinematica : MonoBehaviour
         if (textoSaltar != null)
             textoSaltar.color = new Color(1f, 1f, 1f, 0.45f + Mathf.Sin(Time.time * 3f) * 0.25f);
 
-        Keyboard k = Keyboard.current;
-        Mouse m = Mouse.current;
-        bool saltar = (k != null && (k.spaceKey.wasPressedThisFrame || k.enterKey.wasPressedThisFrame || k.escapeKey.wasPressedThisFrame)) ||
-                      (m != null && m.leftButton.wasPressedThisFrame);
-        if (saltar)
+        if (Entrada.Saltear())
             Salir();
 
         if (juguetesVivos && destinoJuguetes != null)
