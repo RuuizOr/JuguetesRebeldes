@@ -321,8 +321,8 @@ public static partial class ConstructorJuego
             RenderSettings.ambientGroundColor = new Color(0.15f, 0.12f, 0.12f);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Exponential;
-            RenderSettings.fogColor = new Color(0.08f, 0.06f, 0.08f);
-            RenderSettings.fogDensity = 0.01f;
+            RenderSettings.fogColor = new Color(0.1f, 0.13f, 0.24f);
+            RenderSettings.fogDensity = 0.012f;
         }
 
         Light sol = Object.FindAnyObjectByType<Light>();

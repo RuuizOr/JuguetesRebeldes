@@ -376,3 +376,75 @@ public static partial class ConstructorJuego
         return relleno;
     }
 }
+
+public static partial class ConstructorJuego
+{
+    // Exterior nevado alrededor de una sala para que el mapa no "flote" en el vacío.
+    static void CrearExteriorNevado(Transform padre, float minX, float maxX, float minZ, float maxZ, System.Random r)
+    {
+        Transform ext = Grupo("ExteriorNevado", padre).transform;
+
+        GameObject suelo = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        suelo.name = "SueloNieveExterior";
+        suelo.transform.SetParent(ext, false);
+        suelo.transform.position = new Vector3((minX + maxX) / 2f, -0.02f, (minZ + maxZ) / 2f);
+        suelo.transform.localScale = new Vector3(16f, 1f, 16f);
+        suelo.GetComponent<Renderer>().sharedMaterial = matNieve;
+        Object.DestroyImmediate(suelo.GetComponent<MeshCollider>());
+        IgnorarNavMesh(suelo);
+
+        string[] pinos = { "tree-snow-a", "tree-snow-b", "tree-snow-c", "tree" };
+
+        // Bosque a los lados y al fondo (norte)
+        for (int i = 0; i < 140; i++)
+        {
+            float x = minX - 35f + (float)r.NextDouble() * (maxX - minX + 70f);
+            float z = minZ - 4f + (float)r.NextDouble() * (maxZ - minZ + 45f);
+            bool dentro = x > minX - 3f && x < maxX + 3f && z > minZ - 3f && z < maxZ + 3f;
+            if (dentro) continue;
+            if (z < minZ + 2f && x > minX - 6f && x < maxX + 6f) continue; // frente libre para la cámara
+            float esc = 1.3f + (float)r.NextDouble() * 1.1f;
+            Poner(pinos[r.Next(pinos.Length)], new Vector3(x, 0f, z), r.Next(0, 360), esc, ext);
+        }
+
+        // Frente (lado de la cámara): solo cosas bajas
+        for (float x = minX - 2f; x <= maxX + 2f; x += 3.2f)
+        {
+            float z = minZ - 4.5f - (float)r.NextDouble() * 6f;
+            Poner(r.NextDouble() < 0.7 ? "snow-pile" : "rocks-small", new Vector3(x, 0f, z), r.Next(0, 360), 0.9f + (float)r.NextDouble() * 0.7f, ext);
+        }
+        for (int i = 0; i < 30; i++)
+        {
+            float x = minX - 20f + (float)r.NextDouble() * (maxX - minX + 40f);
+            float z = minZ - 16f + (float)r.NextDouble() * (maxZ - minZ + 40f);
+            bool cerca = x > minX - 2f && x < maxX + 2f && z > minZ - 2f && z < maxZ + 2f;
+            if (!cerca) Poner(r.NextDouble() < 0.5 ? "snow-flat-large" : "snow-pile", new Vector3(x, 0f, z), r.Next(0, 360), 1.2f, ext);
+        }
+
+        // Detalles con luz
+        Vector3[] faroles =
+        {
+            new Vector3(minX - 3f, 0f, minZ - 2.5f), new Vector3(maxX + 3f, 0f, minZ - 2.5f),
+            new Vector3(minX - 3.5f, 0f, (minZ + maxZ) / 2f), new Vector3(maxX + 3.5f, 0f, (minZ + maxZ) / 2f),
+            new Vector3(minX - 3f, 0f, maxZ + 3f), new Vector3(maxX + 3f, 0f, maxZ + 3f)
+        };
+        foreach (Vector3 p in faroles)
+        {
+            Poner("lantern", p, 0f, 1f, ext);
+            Luz("LuzExterior", p + Vector3.up * 3.7f, LuzCalida, 3f, 10f, ext, true);
+        }
+        Poner("sled-long", new Vector3(minX - 5f, 0f, minZ + 3f), 70f, 1.4f, ext);
+        Poner("snowman-hat", new Vector3(maxX + 5f, 0f, minZ + 4f), 230f, 1.5f, ext);
+        Poner("snowman", new Vector3(minX - 6f, 0f, maxZ - 2f), 120f, 1.4f, ext);
+        Poner("rocks-large", new Vector3(maxX + 8f, 0f, maxZ + 4f), 30f, 1f, ext);
+        PilaRegalos(new Vector3(maxX + 5f, 0f, maxZ - 3f), 3, ext, r);
+
+        // Nieve cayendo solo afuera (cuatro franjas alrededor del taller)
+        float cx = (minX + maxX) / 2f, cz = (minZ + maxZ) / 2f;
+        float ancho = maxX - minX, largo = maxZ - minZ;
+        CrearNieve(ext, new Vector3(cx, 9f, maxZ + 9f), new Vector3(ancho + 40f, 1f, 16f), 90f);
+        CrearNieve(ext, new Vector3(cx, 9f, minZ - 9f), new Vector3(ancho + 40f, 1f, 16f), 90f);
+        CrearNieve(ext, new Vector3(minX - 10f, 9f, cz), new Vector3(18f, 1f, largo + 2f), 60f);
+        CrearNieve(ext, new Vector3(maxX + 10f, 9f, cz), new Vector3(18f, 1f, largo + 2f), 60f);
+    }
+}

@@ -225,7 +225,7 @@ public static partial class ConstructorJuego
     {
         var escena = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
         System.Random r = new System.Random(100 + n);
-        Camera cam = PrepararCamara(n == 3 ? new Color(0.06f, 0.08f, 0.16f) : new Color(0.04f, 0.03f, 0.05f));
+        Camera cam = PrepararCamara(new Color(0.06f, 0.08f, 0.16f));
         Iluminacion(n == 3);
         PostProceso();
 
@@ -243,6 +243,7 @@ public static partial class ConstructorJuego
             nm.radioNivel = 11f;
 
             Sala s = CrearSala(11, 9, "floor-wood", 5);
+            CrearExteriorNevado(s.raiz, s.bordeO, s.bordeE, s.bordeS, s.bordeN, r);
             CrearPuerta(new Vector3(Celda(s, 5, 0).x, 0f, s.bordeN), Vector3.back, s.raiz);
 
             Poner("tree-decorated", new Vector3(0f, 0.2f, 2f), 0f, 1.05f, deco, true);
@@ -295,6 +296,7 @@ public static partial class ConstructorJuego
             nm.radioNivel = 14f;
 
             Sala s = CrearSala(14, 12, "floor-stone", 7);
+            CrearExteriorNevado(s.raiz, s.bordeO, s.bordeE, s.bordeS, s.bordeN, r);
             float xPuerta = Celda(s, 7, 0).x;
             CrearPuerta(new Vector3(xPuerta, 0f, s.bordeN), Vector3.back, s.raiz);
 
@@ -607,7 +609,7 @@ public static partial class ConstructorJuego
     {
         var escena = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
         System.Random r = new System.Random(7);
-        Camera cam = PrepararCamara(new Color(0.02f, 0.02f, 0.04f));
+        Camera cam = PrepararCamara(new Color(0.06f, 0.08f, 0.16f));
         Iluminacion(false);
         RenderSettings.ambientSkyColor *= 0.6f;
         RenderSettings.ambientEquatorColor *= 0.6f;
@@ -616,6 +618,7 @@ public static partial class ConstructorJuego
         if (sol != null) { sol.intensity = 0.25f; sol.color = new Color(0.6f, 0.65f, 1f); }
 
         Sala s = CrearSala(9, 8, "floor-wood", 4);
+        CrearExteriorNevado(s.raiz, s.bordeO, s.bordeE, s.bordeS, s.bordeN, r);
         Transform deco = Grupo("Decoracion").transform;
         Vector3 puerta = new Vector3(Celda(s, 4, 0).x, 0f, s.bordeN);
         Poner("cabin-doorway", puerta, 0f, 1f, deco);
