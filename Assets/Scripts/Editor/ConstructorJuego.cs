@@ -45,18 +45,23 @@ public static partial class ConstructorJuego
 
             EditorUtility.DisplayProgressBar("Juguetes Rebeldes", "Escena: Intro", 0.35f);
             ConstruirIntro();
-            EditorUtility.DisplayProgressBar("Juguetes Rebeldes", "Escena: Menú", 0.5f);
+            EditorUtility.DisplayProgressBar("Juguetes Rebeldes", "Escena: Menú", 0.45f);
             ConstruirMenu();
+            EditorUtility.DisplayProgressBar("Juguetes Rebeldes", "Escena: Selección de personaje", 0.5f);
+            ConstruirSeleccion();
             for (int n = 1; n <= 3; n++)
             {
                 EditorUtility.DisplayProgressBar("Juguetes Rebeldes", "Escena: Nivel " + n, 0.55f + n * 0.13f);
                 ConstruirNivel(n);
             }
 
+            CrearPantallaCarga();
+
             EditorBuildSettings.scenes = new[]
             {
                 new EditorBuildSettingsScene(RutaEscenas + "/Intro.unity", true),
                 new EditorBuildSettingsScene(RutaEscenas + "/MenuPrincipal.unity", true),
+                new EditorBuildSettingsScene(RutaEscenas + "/SeleccionPersonaje.unity", true),
                 new EditorBuildSettingsScene(RutaEscenas + "/Nivel1.unity", true),
                 new EditorBuildSettingsScene(RutaEscenas + "/Nivel2.unity", true),
                 new EditorBuildSettingsScene(RutaEscenas + "/Nivel3.unity", true),

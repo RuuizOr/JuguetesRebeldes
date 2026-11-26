@@ -26,6 +26,12 @@ public static class GameData
         set { PlayerPrefs.SetFloat("VolSFX", value); PlayerPrefs.Save(); }
     }
 
+    public static int Personaje
+    {
+        get => UnityEngine.Mathf.Clamp(PlayerPrefs.GetInt("Personaje", 0), 0, Personajes.Lista.Length - 1);
+        set { PlayerPrefs.SetInt("Personaje", value); PlayerPrefs.Save(); }
+    }
+
     public static int Estrellas(int nivel) => PlayerPrefs.GetInt("Estrellas" + nivel, 0);
 
     public static void GuardarEstrellas(int nivel, int estrellas)

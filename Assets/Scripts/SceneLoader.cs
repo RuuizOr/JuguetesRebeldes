@@ -12,6 +12,9 @@ public class SceneLoader : MonoBehaviour
     public Text textoTip;
     public Text textoTitulo;
     public RectTransform icono;
+    public Image fondoEscena;
+    public string[] escenasConFondo;
+    public Sprite[] fondos;
     [TextArea] public string[] tips;
 
     private static SceneLoader instancia;
@@ -70,6 +73,15 @@ public class SceneLoader : MonoBehaviour
         barra.fillAmount = 0f;
         textoPorcentaje.text = "0%";
         if (textoTitulo != null) textoTitulo.text = titulo;
+        if (fondoEscena != null)
+        {
+            Sprite s = null;
+            for (int i = 0; escenasConFondo != null && i < escenasConFondo.Length; i++)
+                if (escenasConFondo[i] == escena && i < fondos.Length) s = fondos[i];
+            fondoEscena.sprite = s;
+            fondoEscena.enabled = s != null;
+        }
+
         if (tips != null && tips.Length > 0)
             textoTip.text = tips[Random.Range(0, tips.Length)];
 

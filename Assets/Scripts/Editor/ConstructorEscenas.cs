@@ -43,6 +43,8 @@ public static partial class ConstructorJuego
         bc.center = new Vector3(0f, 0.2f - 0.5f, 0f);
         bc.size = new Vector3(W * S + 2f, 1f, L * S + 2f);
 
+        LimitesInvisibles(s.raiz, s.bordeO, s.bordeE, s.bordeS, s.bordeN);
+
         Transform paredes = Grupo("Paredes", s.raiz).transform;
         for (int i = 0; i < W; i++)
         {
@@ -100,8 +102,8 @@ public static partial class ConstructorJuego
         bloqueo.transform.position = centroBorde;
         bloqueo.transform.rotation = Quaternion.Euler(0f, rotY, 0f);
         BoxCollider bc = bloqueo.AddComponent<BoxCollider>();
-        bc.center = new Vector3(0f, 2f, 0f);
-        bc.size = new Vector3(S * 1.1f, 4f, 0.4f);
+        bc.center = new Vector3(0f, 5f, 0f);
+        bc.size = new Vector3(S * 1.1f, 10f, 0.6f);
 
         GameObject cartel = new GameObject("Cartel");
         cartel.transform.SetParent(g.transform, false);
@@ -376,8 +378,8 @@ public static partial class ConstructorJuego
             GameObject limites = Grupo("Limites");
             foreach (var (c, t) in new[]
             {
-                (new Vector3(0f, 2f, 18.3f), new Vector3(46f, 4f, 1f)), (new Vector3(0f, 2f, -18.3f), new Vector3(46f, 4f, 1f)),
-                (new Vector3(20.8f, 2f, 0f), new Vector3(1f, 4f, 40f)), (new Vector3(-20.8f, 2f, 0f), new Vector3(1f, 4f, 40f))
+                (new Vector3(0f, 5f, 18.3f), new Vector3(46f, 10f, 1.2f)), (new Vector3(0f, 5f, -18.3f), new Vector3(46f, 10f, 1.2f)),
+                (new Vector3(20.8f, 5f, 0f), new Vector3(1.2f, 10f, 40f)), (new Vector3(-20.8f, 5f, 0f), new Vector3(1.2f, 10f, 40f))
             })
             {
                 BoxCollider b = limites.AddComponent<BoxCollider>();
@@ -451,6 +453,10 @@ public static partial class ConstructorJuego
         cam.transform.position = jugador.transform.position + cs.distancia;
         cam.transform.LookAt(jugador.transform.position + Vector3.up);
 
+        if (n == 1) CapturarFondo("Nivel1", new Vector3(0f, 17f, -18f), new Vector3(0f, 0f, 1f));
+        else if (n == 2) CapturarFondo("Nivel2", new Vector3(0f, 20f, -22f), new Vector3(0f, 0f, 0f));
+        else CapturarFondo("Nivel3", new Vector3(0f, 19f, -25f), new Vector3(0f, 0f, 2f));
+
         CrearHUD(nm);
         CrearEventSystem();
 
@@ -479,8 +485,8 @@ public static partial class ConstructorJuego
         Texto("LabelEscapados", marcador.transform, "Escapados", 30, new Color(1f, 0.75f, 0.7f), TextAnchor.MiddleLeft, arribaIzq, new Vector2(95f, -96f), new Vector2(200f, 50f));
         nm.textoEscapados = Texto("TextoEscapados", marcador.transform, "0 / 3", 46, new Color(1f, 0.6f, 0.55f), TextAnchor.MiddleRight, arribaIzq, new Vector2(270f, -90f), new Vector2(170f, 60f));
 
-        nm.corazones = new Image[3];
-        for (int i = 0; i < 3; i++)
+        nm.corazones = new Image[4];
+        for (int i = 0; i < 4; i++)
         {
             Image h = Imagen("Corazon" + (i + 1), marcador.transform, SpriteUI("corazon"), Color.white);
             Colocar(h.rectTransform, arribaIzq, new Vector2(22f + i * 72f, -165f), new Vector2(60f, 60f));
@@ -739,6 +745,7 @@ public static partial class ConstructorJuego
         cam.transform.position = ic.tomas[0].camaraDesde;
         cam.transform.LookAt(ic.tomas[0].mirarDesde);
 
+        CapturarFondo("Intro", new Vector3(-10f, 9f, -9f), new Vector3(0f, 2f, 3f));
         HornearYGuardar(escena, "Intro", null);
     }
 
@@ -813,10 +820,10 @@ public static partial class ConstructorJuego
             Saltarin s = JugueteDecorativo(Tipos[i], p, -i * 51f - 110f, deco);
             s.velocidadForzada = 1.5f;
         }
-        GameObject duende = Grupo("Duende", deco);
+        GameObject duende = Grupo("Personaje", deco);
         duende.transform.position = new Vector3(0f, 0f, -6f);
         duende.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
-        InstanciarPersonaje("character-soldier", 1.85f, 0.7549f, duende.transform, ctrlDuende);
+        GameObject[] personajesDiorama = InstanciarTodosLosPersonajes(duende.transform, out _);
 
         CrearNieve(null, new Vector3(0f, 14f, 0f), new Vector3(45f, 1f, 45f), 220f);
 
@@ -827,38 +834,56 @@ public static partial class ConstructorJuego
         oc.mirarOffset = new Vector3(0f, 2.5f, 0f);
 
         // ---------------- UI ----------------
+        CapturarFondo("MenuPrincipal", new Vector3(13f, 6.5f, -11f), new Vector3(0f, 2.5f, 0f));
+
         Canvas c = CrearCanvas("UI_Menu", 10);
         Transform t = c.transform;
         MenuPrincipal mp = new GameObject("MenuPrincipal").AddComponent<MenuPrincipal>();
+        mp.personajesDiorama = personajesDiorama;
 
-        Image sombra = Imagen("SombraIzquierda", t, SpriteUI("fondo_degradado"), new Color(0f, 0f, 0f, 0.55f));
-        Colocar(sombra.rectTransform, new Vector2(0f, 0.5f), Vector2.zero, new Vector2(820f, 1080f));
-        sombra.rectTransform.anchorMin = new Vector2(0f, 0f);
-        sombra.rectTransform.anchorMax = new Vector2(0f, 1f);
-        sombra.rectTransform.sizeDelta = new Vector2(820f, 0f);
+        Image arriba = Imagen("DegradadoArriba", t, SpriteUI("degradado_arriba"), new Color(0f, 0f, 0f, 0.65f));
+        arriba.rectTransform.anchorMin = new Vector2(0f, 1f); arriba.rectTransform.anchorMax = new Vector2(1f, 1f);
+        arriba.rectTransform.pivot = new Vector2(0.5f, 1f); arriba.rectTransform.sizeDelta = new Vector2(0f, 420f);
+        arriba.rectTransform.anchoredPosition = Vector2.zero;
+        Image abajo = Imagen("DegradadoAbajo", t, SpriteUI("degradado_abajo"), new Color(0f, 0f, 0f, 0.85f));
+        abajo.rectTransform.anchorMin = new Vector2(0f, 0f); abajo.rectTransform.anchorMax = new Vector2(1f, 0f);
+        abajo.rectTransform.pivot = new Vector2(0.5f, 0f); abajo.rectTransform.sizeDelta = new Vector2(0f, 480f);
+        abajo.rectTransform.anchoredPosition = Vector2.zero;
 
-        Text tit = Texto("Titulo", t, "<color=#E8403A>JUGUETES</color>\n<color=#FFD24A>REBELDES</color>", 118, Color.white, TextAnchor.MiddleCenter,
-            new Vector2(0f, 1f), new Vector2(60f, -40f), new Vector2(700f, 290f));
-        tit.lineSpacing = 0.85f;
+        Text tit = Texto("Titulo", t, "<color=#E8403A>JUGUETES</color> <color=#FFD24A>REBELDES</color>", 128, Color.white, TextAnchor.MiddleCenter,
+            new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(1800f, 170f));
         tit.GetComponent<Outline>().effectDistance = new Vector2(5f, -5f);
         tit.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        tit.rectTransform.anchoredPosition = new Vector2(410f, -185f);
+        tit.rectTransform.anchoredPosition = new Vector2(0f, -130f);
         mp.titulo = tit.rectTransform;
-        Texto("Lema", t, "Una Navidad fuera de control", 40, new Color(0.85f, 0.95f, 1f), TextAnchor.MiddleCenter,
-            new Vector2(0f, 1f), new Vector2(60f, -340f), new Vector2(700f, 60f));
+        Texto("Lema", t, "Una Navidad fuera de control", 42, new Color(0.85f, 0.95f, 1f), TextAnchor.MiddleCenter,
+            new Vector2(0.5f, 1f), new Vector2(0f, -225f), new Vector2(1200f, 60f));
 
         GameObject principal = new GameObject("PanelPrincipal", typeof(RectTransform));
         Estirar(Rect(principal, t));
         mp.panelPrincipal = principal;
-        Vector2 ai = new Vector2(0f, 1f);
-        float y = -410f;
-        mp.botonJugar = Boton("BotonJugar", principal.transform, "Jugar", ai, new Vector2(170f, y), new Vector2(480f, 90f), ColorBoton, 42);
+        Vector2 ab = new Vector2(0.5f, 0f);
+
+        mp.textoPersonaje = Texto("TextoPersonaje", principal.transform, "Jugando como: Pino", 32, Color.white, TextAnchor.MiddleCenter,
+            ab, new Vector2(0f, 345f), new Vector2(800f, 50f));
+        mp.botonJugar = BotonIcono("BotonJugar", principal.transform, "JUGAR", "play", ab, new Vector2(0f, 205f), new Vector2(600f, 125f), ColorBoton, 60);
+        mp.botonJugar.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
         mp.textoJugar = mp.botonJugar.GetComponentInChildren<Text>();
-        mp.botonNiveles = Boton("BotonNiveles", principal.transform, "Niveles", ai, new Vector2(170f, y - 100f), new Vector2(480f, 80f), ColorBotonAzul);
-        mp.botonComoJugar = Boton("BotonComoJugar", principal.transform, "Cómo jugar", ai, new Vector2(170f, y - 190f), new Vector2(480f, 80f), ColorBotonAzul);
-        mp.botonOpciones = Boton("BotonOpciones", principal.transform, "Opciones", ai, new Vector2(170f, y - 280f), new Vector2(480f, 80f), ColorBotonAzul);
-        mp.botonIntro = Boton("BotonIntro", principal.transform, "Ver intro", ai, new Vector2(170f, y - 370f), new Vector2(480f, 80f), ColorBotonAzul);
-        mp.botonSalir = Boton("BotonSalir", principal.transform, "Salir", ai, new Vector2(170f, y - 460f), new Vector2(480f, 80f), ColorBotonRojo);
+
+        string[] etiquetas = { "Personaje", "Niveles", "Opciones", "Ver intro", "Salir" };
+        string[] iconos = { "persona", "bandera", "engrane", "play", "salir" };
+        Button[] fila = new Button[5];
+        for (int i = 0; i < 5; i++)
+        {
+            fila[i] = BotonIcono("Boton" + etiquetas[i].Replace(" ", ""), principal.transform, etiquetas[i], iconos[i], ab,
+                new Vector2((i - 2) * 300f, 60f), new Vector2(280f, 100f), i == 4 ? ColorBotonRojo : ColorBotonAzul, 34);
+            fila[i].GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0f);
+        }
+        mp.botonPersonaje = fila[0];
+        mp.botonNiveles = fila[1];
+        mp.botonOpciones = fila[2];
+        mp.botonIntro = fila[3];
+        mp.botonSalir = fila[4];
 
         // Niveles
         RectTransform cn = CrearPanelModal("PanelNiveles", t, new Vector2(1150f, 660f), "Elige un nivel", new Color(1f, 0.85f, 0.3f), out GameObject niveles);
@@ -889,26 +914,11 @@ public static partial class ConstructorJuego
         mp.spriteEstrellaVacia = SpriteUI("estrella_vacia");
         mp.botonVolverNiveles = Boton("BotonVolver", cn, "Volver", new Vector2(0.5f, 0f), new Vector2(0f, 35f), new Vector2(320f, 80f), ColorBotonAzul);
 
-        // Cómo jugar
-        RectTransform cj = CrearPanelModal("PanelComoJugar", t, new Vector2(1250f, 820f), "Cómo jugar", new Color(0.7f, 0.9f, 1f), out GameObject comoJugar);
-        mp.panelComoJugar = comoJugar;
-        Texto("Texto", cj,
-            "<color=#FFD24A>Historia:</color> los juguetes del taller cobraron vida y quieren escapar antes de Navidad. Eres Pino, el duende: ¡atrápalos a todos!\n\n" +
-            "<color=#FFD24A>Controles:</color>  WASD / flechas para moverte  •  Espacio para saltar  •  Shift para correr  •  Esc para pausar\n\n" +
-            "<color=#FFD24A>Reglas:</color>\n" +
-            "•  Toca a un juguete para atraparlo. Huyen de ti, pero se cansan (<color=#9BD8FF>Zzz</color>) después de correr.\n" +
-            "•  Si un juguete muestra <color=#FF5A50>¡!</color> va hacia la SALIDA. Si se escapan 3, pierdes.\n" +
-            "•  El Cascanueces gigante te persigue y te quita vidas. Tienes 3.\n" +
-            "•  Los bastones de dulce te dan súper velocidad.  •  En el hielo resbalas.\n" +
-            "•  Termina rápido y sin escapes para ganar 3 estrellas.",
-            32, Color.white, TextAnchor.UpperLeft, new Vector2(0.5f, 1f), new Vector2(0f, -130f), new Vector2(1130f, 560f), false);
-        mp.botonVolverComoJugar = Boton("BotonVolver", cj, "Volver", new Vector2(0.5f, 0f), new Vector2(0f, 35f), new Vector2(320f, 80f), ColorBotonAzul);
-
         PanelOpciones po = CrearPanelOpciones(t, out Button volver);
         mp.panelOpciones = po.gameObject;
         mp.botonVolverOpciones = volver;
 
-        Texto("Version", t, "v1.0", 24, new Color(1f, 1f, 1f, 0.5f), TextAnchor.LowerRight, new Vector2(1f, 0f), new Vector2(-25f, 20f), new Vector2(200f, 40f), false);
+        Texto("Version", t, "v1.1", 24, new Color(1f, 1f, 1f, 0.5f), TextAnchor.LowerRight, new Vector2(1f, 0f), new Vector2(-25f, 20f), new Vector2(200f, 40f), false);
 
         CrearEventSystem();
         HornearYGuardar(escena, "MenuPrincipal", null);

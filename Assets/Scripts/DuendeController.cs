@@ -25,6 +25,9 @@ public class DuendeController : MonoBehaviour
 
     [Header("Referencias")]
     public Animator animator;
+    [Tooltip("Un modelo por personaje (mismo orden que Personajes.Lista)")]
+    public GameObject[] modelos;
+    public Animator[] animadores;
     public ParticleSystem efectoBoost;
 
     private CharacterController controller;
@@ -53,9 +56,29 @@ public class DuendeController : MonoBehaviour
     void Awake()
     {
         controller = GetComponent<CharacterController>();
+        AplicarPersonaje();
         renderers = GetComponentsInChildren<Renderer>();
         vidas = vidasMaximas;
         energia = energiaMaxima;
+    }
+
+    void AplicarPersonaje()
+    {
+        if (modelos == null || modelos.Length == 0)
+            return;
+
+        int indice = Mathf.Clamp(GameData.Personaje, 0, modelos.Length - 1);
+        for (int i = 0; i < modelos.Length; i++)
+            if (modelos[i] != null) modelos[i].SetActive(i == indice);
+        if (animadores != null && indice < animadores.Length)
+            animator = animadores[indice];
+
+        Personajes.Info info = Personajes.Lista[Mathf.Min(indice, Personajes.Lista.Length - 1)];
+        velocidad = info.velocidad;
+        velocidadSprint = info.velocidadSprint;
+        energiaMaxima = info.energia;
+        recargaEnergia = info.recarga;
+        vidasMaximas = info.vidas;
     }
 
     void Start()

@@ -43,6 +43,7 @@ public static partial class ConstructorJuego
         efectoPowerUp = CrearEfectoBurst("EfectoPowerUp", new Color(1f, 0.45f, 0.65f), Color.white, 40, 3f, 6f, 0.7f, 0.35f, 0.3f);
 
         ctrlDuende = CrearControlador("Duende", RutaPersonajes + "/character-soldier.fbx", true);
+        CrearControladoresPersonajes();
         prefabDuende = CrearPrefabDuende();
         prefabCascanueces = CrearPrefabCascanueces();
         prefabBaston = CrearPrefabBaston();
@@ -52,7 +53,6 @@ public static partial class ConstructorJuego
             prefabsJuguete[t.id] = CrearPrefabJuguete(t);
 
         CrearAudioManager();
-        CrearPantallaCarga();
         AssetDatabase.SaveAssets();
     }
 
@@ -175,8 +175,9 @@ public static partial class ConstructorJuego
         cc.slopeLimit = 50f;
 
         DuendeController dc = root.AddComponent<DuendeController>();
-        GameObject m = InstanciarPersonaje("character-soldier", 1.85f, 0.7549f, root.transform, ctrlDuende);
-        dc.animator = m.GetComponent<Animator>();
+        dc.modelos = InstanciarTodosLosPersonajes(root.transform, out Animator[] animadores);
+        dc.animadores = animadores;
+        dc.animator = animadores[0];
 
         // Estela del bastón de dulce
         GameObject est = new GameObject("EstelaBoost");
@@ -373,6 +374,19 @@ public static partial class ConstructorJuego
             cp.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             cp.rectTransform.localRotation = Quaternion.Euler(0f, 0f, i * 23f);
         }
+
+        Image fondoEscena = Imagen("FondoEscena", c.transform, null, Color.white);
+        Estirar(fondoEscena.rectTransform);
+        fondoEscena.preserveAspect = false;
+        sl.fondoEscena = fondoEscena;
+        var lista = new System.Collections.Generic.List<string>(fondosCapturados.Keys);
+        sl.escenasConFondo = lista.ToArray();
+        sl.fondos = lista.ConvertAll(k => fondosCapturados[k]).ToArray();
+        Image velo = Imagen("Velo", c.transform, null, new Color(0.02f, 0.03f, 0.08f, 0.35f));
+        Estirar(velo.rectTransform);
+        Image cajaCarga = Panel("CajaCarga", c.transform, new Vector2(0.5f, 0.5f), new Vector2(0f, 20f), new Vector2(1100f, 480f), new Color(0.03f, 0.05f, 0.12f, 0.55f));
+        cajaCarga.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        cajaCarga.raycastTarget = false;
 
         Image icono = Imagen("Icono", c.transform, SpriteUI("copo"), new Color(0.85f, 0.95f, 1f));
         Colocar(icono.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), new Vector2(180f, 180f));
