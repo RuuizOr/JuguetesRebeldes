@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &208533254523835022
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 669516646782184064}
+  - component: {fileID: 7653387583908269855}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &669516646782184064
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 208533254523835022}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7653387583908269855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 208533254523835022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abf44c9ad888ec8459ab3cc4deb9d631, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  musicaMenu: {fileID: 8300000, guid: 779e774af5d979a47b7af9a36e37de78, type: 3}
+  musicaJuego: {fileID: 8300000, guid: 60f56ea7eff966044acbb69ee8fc94e6, type: 3}
+  sonidos:
+  - nombre: alerta
+    clip: {fileID: 8300000, guid: 3ee1c1d46ca792145b571d109c35ec49, type: 3}
+    volumen: 1
+  - nombre: atrapar
+    clip: {fileID: 8300000, guid: f9f3ccf6d6512c74593b933687a5e6bf, type: 3}
+    volumen: 1
+  - nombre: click
+    clip: {fileID: 8300000, guid: e87802c58cb7e2648beb2e98e23016be, type: 3}
+    volumen: 1
+  - nombre: cuenta
+    clip: {fileID: 8300000, guid: 1a54e5a61bdc880438d20ae937e959ff, type: 3}
+    volumen: 1
+  - nombre: dano
+    clip: {fileID: 8300000, guid: 4cd8a64a1a4235e45a55b5f5d1aa3ac0, type: 3}
+    volumen: 1
+  - nombre: derrota
+    clip: {fileID: 8300000, guid: 373da0ca729581846a8df7ab2f888fb5, type: 3}
+    volumen: 1
+  - nombre: escape
+    clip: {fileID: 8300000, guid: 38e5492a3dd4a6b4ba6fedc3e2e8c777, type: 3}
+    volumen: 1
+  - nombre: go
+    clip: {fileID: 8300000, guid: c350b956465a2a043b0ac9628312fced, type: 3}
+    volumen: 1
+  - nombre: hover
+    clip: {fileID: 8300000, guid: 0f25897e9ecbf0943ada377035db31d5, type: 3}
+    volumen: 0.5
+  - nombre: magia
+    clip: {fileID: 8300000, guid: db76c0b51fa29604d95b3d132360f648, type: 3}
+    volumen: 1
+  - nombre: nivel_completo
+    clip: {fileID: 8300000, guid: ff8ea79f4031b884685b492df9e227d7, type: 3}
+    volumen: 1
+  - nombre: pisada
+    clip: {fileID: 8300000, guid: 1ac620719836a184aa6235f3b8b9cbd3, type: 3}
+    volumen: 0.9
+  - nombre: pop
+    clip: {fileID: 8300000, guid: b4214fa1170d50641ab5aa455569ad5a, type: 3}
+    volumen: 1
+  - nombre: powerup
+    clip: {fileID: 8300000, guid: 679bf229785eb7147a293fe0eddc1ad3, type: 3}
+    volumen: 1
+  - nombre: salto
+    clip: {fileID: 8300000, guid: 2d4c4cae8c28d27488428e40189162ea, type: 3}
+    volumen: 1
+  - nombre: victoria
+    clip: {fileID: 8300000, guid: ddd39ae47e871654b816a79d63c2c763, type: 3}
+    volumen: 1
