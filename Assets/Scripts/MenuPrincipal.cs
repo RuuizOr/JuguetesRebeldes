@@ -57,6 +57,12 @@ public class MenuPrincipal : MonoBehaviour
         botonOpciones.onClick.AddListener(() => Mostrar(panelOpciones));
         botonIntro.onClick.AddListener(() => SceneLoader.Cargar("Intro", "Había una vez..."));
         botonSalir.onClick.AddListener(Salir);
+#if UNITY_WEBGL && !UNITY_EDITOR
+        // En el navegador no se puede cerrar el juego: se oculta "Salir" y se centran los demás botones.
+        botonSalir.gameObject.SetActive(false);
+        foreach (Button b in new[] { botonPersonaje, botonNiveles, botonRecords, botonOpciones, botonIntro })
+            b.GetComponent<RectTransform>().anchoredPosition += new Vector2(142.5f, 0f);
+#endif
         botonRecords.onClick.AddListener(() => Mostrar(panelRecords));
         botonVolverRecords.onClick.AddListener(() => Mostrar(panelPrincipal));
 
